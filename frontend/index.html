@@ -589,7 +589,14 @@ async function sendWrite(fn, args, label) {
 /* ============================================================ wallet */
 function wallets() { return JSON.parse(localStorage.getItem("aegisflow_wallets") || "[]"); }
 function activeWalletIdx() { const i = localStorage.getItem("aegisflow_active"); return wallets().length ? (i === null ? 0 : Math.min(+i, wallets().length - 1)) : -1; }
-function activeWallet() { const ws = wallets(), i = activeWalletIdx(); return i >= 0 ? ws[i] : null; }
+function activeWallet() {
+  const ws = wallets(), i = activeWalletIdx();
+  if (i < 0) return null;
+  const w = ws[i];
+  // acct (LocalAccount) is never JSON-serializable — always re-derive
+  try { w.acct = SDK.createAccount(w.pk); } catch (e) { return null; }
+  return w;
+}
 async function ensureWallet() {
   if (activeWallet()) return activeWallet();
   const pk = SDK.generatePrivateKey();
@@ -598,14 +605,14 @@ async function ensureWallet() {
   const ws = wallets(); ws.push(w); localStorage.setItem("aegisflow_wallets", JSON.stringify(ws));
   localStorage.setItem("aegisflow_active", String(ws.length - 1));
   await activateWallet(ws.length - 1, true);
-  return w;
+  return activeWallet();
 }
 async function activateWallet(i, silent) {
   const ws = wallets(); if (!ws[i]) return;
-  ws[i].acct = SDK.createAccount(ws[i].pk);
+  const acct = SDK.createAccount(ws[i].pk);
   localStorage.setItem("aegisflow_active", String(i));
   try {
-    await client.request({ method: "sim_fundAccount", params: [ws[i].acct.address, 5e18] });
+    await client.request({ method: "sim_fundAccount", params: [acct.address, 5e18] });
     if (!silent) toast("Wallet funded with 5 GEN (faucet)", "ok");
   } catch (e) { if (!silent) toast("Faucet skipped: " + String(e).slice(0, 80), "warn"); }
   renderWalletBox();
@@ -622,7 +629,11 @@ document.getElementById("btn-wallet").onclick = async () => {
 function showWalletList() {
   const ws = wallets(), i = activeWalletIdx();
   let h = "<div style='margin-top:10px'>";
-  ws.forEach((w, k) => { h += `<div class="fact" style="margin-bottom:6px"><span class="fname mono">${w.acct ? w.acct.address : w.pk.slice(0, 14)}</span>${k === i ? '<span class="fb f">ACTIVE</span>' : `<button class="btn btn-g btn-sm" onclick="activateWallet(${k})">use</button>`}</div>`; });
+  ws.forEach((w, k) => {
+    let addr;
+    try { addr = SDK.createAccount(w.pk).address; } catch (e) { addr = "error"; }
+    h += `<div class="fact" style="margin-bottom:6px"><span class="fname mono">${addr}</span>${k === i ? '<span class="fb f">ACTIVE</span>' : `<button class="btn btn-g btn-sm" onclick="activateWallet(${k})">use</button>`}</div>`;
+  });
   h += "</div>";
   const wi = document.getElementById("wallet-info"); if (wi) wi.innerHTML = h;
 }
