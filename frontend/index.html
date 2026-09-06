@@ -875,31 +875,34 @@ async function runConsensusFor(aid, s) {
 const PROGRESS = { step: 0, action: null, scenario: null, txHash: null, decision: null };
 async function runS5(btn) {
   try {
-    setBusy(btn, true, "Submitting v1 intent…");
+    setBusy(btn, true, "Reading current policy…");
+    const cur = await readContract("get_policy", ["treasury-policy"]);
+    const curV = cur.version || 1;
+    setBusy(btn, true, "Submitting intent under v" + curV + "…");
     const aid = await submitIntent(KNOWN, 25000, "Pay infrastructure provider");
     const dec = await runConsensusFor(aid, null);
-    if (dec.decision !== "APPROVE") throw new Error("S5 pre-step: expected APPROVE under v1, got " + dec.decision);
-    setBusy(btn, true, "Tightening policy to v2…");
-    const pol = await readContract("get_policy", ["treasury-policy"]);
-    if (pol.version && pol.version >= 2) {
-      // policy already at v2 from a previous run: just demonstrate the block with this v1 approval? v1 approval already died; submit fresh under v2 => reject path
-      toast("Policy already ≥ v2 — demonstrating over-limit REJECT under current version instead.", "warn");
-      const aid2 = await submitIntent(KNOWN, 25000, "Pay infrastructure provider");
-      await runConsensusFor(aid2, { expect: "REJECT" });
-      return;
-    }
-    const cur = await readContract("get_policy", ["treasury-policy"]);
-    await sendWrite("update_policy", ["treasury-policy", cur.name, "Tightened after incident review",
+    if (dec.decision !== "APPROVE") throw new Error("S5 pre-step: expected APPROVE under v" + curV + ", got " + dec.decision);
+    setBusy(btn, true, "Tightening policy to v" + (curV + 1) + "…");
+    await sendWrite("update_policy", ["treasury-policy", cur.name,
+      "Tightened after incident review",
       "Tightened treasury policy: infrastructure payments only, max 10 USDC per transaction.",
       10000, 50000, cur.allowed_action_types, cur.restricted_targets, cur.cooldown_seconds,
       true, 10000, true, true], "update_policy");
-    setBusy(btn, true, "Executing v1 approval under v2…");
-    const r = await sendWrite("execute_action", [aid], "execute_under_v2");
+    setBusy(btn, true, "Executing v" + curV + " approval under v" + (curV + 1) + "…");
+    await sendWrite("execute_action", [aid], "execute_under_new_policy");
     const a = await readContract("get_action", [aid]);
     if (a.status === "BLOCKED" && a.execution_status === "stale_policy") {
-      toast("S5 proven live: the v1 approval was <b>BLOCKED</b> at the enforcement gate under v2.", "ok");
-      go("/actions", aid); renderActionDetail(aid);
+      toast("S5 proven live: the v" + curV + " approval was <b>BLOCKED</b> at the enforcement gate under v" + (curV + 1) + ".", "ok");
     } else throw new Error("Unexpected state: " + a.status + "/" + a.execution_status);
+    // restore demo-friendly limits so the other scenarios keep working
+    setBusy(btn, true, "Restoring demo limits…");
+    await sendWrite("update_policy", ["treasury-policy", cur.name,
+      "Demo policy restored — original limits",
+      cur.natural_language,
+      50000, 150000, cur.allowed_action_types, cur.restricted_targets, cur.cooldown_seconds,
+      true, 50000, true, true], "update_policy_restore");
+    toast("Demo policy restored to original limits.", "ok");
+    go("/actions", aid); renderActionDetail(aid);
   } catch (e) { toast(esc(e.message), "err"); }
   finally { setBusy(btn, false); }
 }
@@ -967,14 +970,19 @@ async function renderActionDetail(id) {
   $("ac-progwrap").innerHTML = progressHtml();
   const f = dec.objective_facts || {};
   const factRows = [
-    ["amount_limit_violation", "Amount > policy single limit"], ["budget_exceeded", "Daily budget would be exceeded"],
-    ["recipient_is_new", "Recipient not in verified registry"], ["cooldown_active", "Agent execution cooldown active"],
-    ["action_type_allowed", "Action type permitted by policy"], ["target_restricted", "Target explicitly restricted"],
-    ["external_risk_flag", "External evidence flags the target"], ["exposure_high", "Total exposure > daily budget"],
-    ["evidence_available", "Registry evidence fetched & verified"]];
+    ["amount_limit_violation", "Amount exceeds policy single-action limit"],
+    ["budget_exceeded", "Daily budget would be exceeded"],
+    ["recipient_is_new", "Recipient not in verified registry"],
+    ["cooldown_active", "Agent execution cooldown active"],
+    ["action_type_allowed", "Action type NOT permitted by policy"],
+    ["target_restricted", "Target explicitly restricted by policy"],
+    ["external_risk_flag", "External evidence flags the target"],
+    ["exposure_high", "Total exposure would exceed daily budget"],
+    ["evidence_available", "Registry evidence could NOT be fetched/verified"]];
   const invert = { action_type_allowed: true, evidence_available: true };
   $("ac-facts").innerHTML = factRows.map(([k, lbl]) => f[k] === undefined ? "" :
-    `<div class="fact"><span class="fname">${lbl}</span>${fb(invert[k] ? !f[k] : f[k])}</div>`).join("");
+    `<div class="fact"><span class="fname">${lbl}</span>${fb(invert[k] ? !f[k] : f[k])}</div>`).join("")
+    + `<p class="tiny mut" style="margin-top:10px">TRUE = risk condition present. These nine booleans are computed identically by the leader and every validator; the LLM never sees arithmetic.</p>`;
   const ev = dec.evidence_entry || {};
   $("ac-evidence").innerHTML = `
     <div class="kv"><div class="k">Target</div><div class="v mono small">${esc(ev.target || "")}</div>

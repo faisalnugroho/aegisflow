@@ -230,18 +230,26 @@ def main():
     write(client, addr, "update_policy", [
         "treasury-policy", "Conservative Treasury Agent",
         "Tightened after incident review",
-        "Tightened treasury policy: max 10 USDC per transaction.",
+        "Tightened treasury policy: infrastructure payments only, max 10 USDC per transaction.",
         10_000, 50_000, "TRANSFER", "", 0, True, 10_000, True, True],
         "update_policy_v2")
     r = write(client, addr, "execute_action", [aid], "s5_execute_under_v2")
     a = read_json(client, addr, "get_action", [aid])
-    # execution result is the BLOCKED payload (tx succeeds, action blocked)
     log["scenarios"]["s5_policy_update"] = {
         "action_id": aid, "final_status": a["status"],
         "execution_status": a["execution_status"]}
     assert a["status"] == "BLOCKED" \
         and a["execution_status"] == "stale_policy", a
     print(f"  => s5: v1 approval correctly BLOCKED under v2", flush=True)
+
+    # ---- restore demo-friendly limits as v3 (so live dApp scenarios
+    # behave as designed: S1 25 USDC approves again) ----------------------
+    write(client, addr, "update_policy", [
+        "treasury-policy", "Conservative Treasury Agent",
+        "Demo policy restored (v3) — original limits",
+        TREASURY_NL,
+        50_000, 150_000, "TRANSFER", "", 0, True, 50_000, True, True],
+        "update_policy_v3_restore")
 
     # ---- final state snapshot -------------------------------------------
     stats = read_json(client, addr, "get_protocol_stats")
