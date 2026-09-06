@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AegisFlow — Autonomous Agents. Consensus-Governed Actions.</title>
+<meta name="description" content="An execution control protocol for autonomous agents, powered by GenLayer consensus.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04060c; --bg2:#070b14; --panel:rgba(13,19,34,.72); --panel2:rgba(20,28,48,.6);
+  --line:rgba(120,160,255,.10); --line2:rgba(120,160,255,.18);
+  --cyan:#22d3ee; --cyan2:#00e5ff; --violet:#8b5cf6; --violet2:#a78bfa;
+  --txt:#e6edf7; --mut:#8b98ad; --mut2:#5b6780; --dim:#3d4c63;
+  --ok:#34d399; --bad:#f87171; --warn:#fbbf24; --info:#60a5fa;
+  --glow-c:0 0 22px rgba(34,211,238,.28); --glow-v:0 0 22px rgba(139,92,246,.30);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--txt);
+  font-family:'Inter',system-ui,sans-serif; font-size:14px; line-height:1.55;
+  min-height:100vh; overflow-x:hidden;
+  background-image:
+    radial-gradient(1200px 600px at 80% -10%, rgba(139,92,246,.10), transparent 60%),
+    radial-gradient(900px 500px at 10% 0%, rgba(34,211,238,.08), transparent 55%),
+    linear-gradient(rgba(120,160,255,.033) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120,160,255,.033) 1px, transparent 1px);
+  background-size:auto,auto,44px 44px,44px 44px;
+}
+h1,h2,h3,h4,.dsp{font-family:'Space Grotesk',sans-serif;letter-spacing:.01em}
+.mono{font-family:'JetBrains Mono',monospace}
+a{color:var(--cyan);text-decoration:none}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#1c2942;border-radius:9px}
+::-webkit-scrollbar-track{background:transparent}
+::selection{background:rgba(34,211,238,.25)}
+
+/* ---------- nav ---------- */
+#nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);
+  background:rgba(4,7,13,.82);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:18px;padding:0 22px;height:58px}
+#nav .logo{display:flex;align-items:center;gap:10px;cursor:pointer;flex:0 0 auto}
+#nav .logo .mark{width:26px;height:26px;position:relative}
+#nav .logo .mark::before{content:"";position:absolute;inset:0;border:2px solid var(--cyan);
+  border-radius:7px;transform:rotate(45deg);box-shadow:var(--glow-c)}
+#nav .logo .mark::after{content:"";position:absolute;inset:7px;background:linear-gradient(135deg,var(--cyan),var(--violet));border-radius:3px;transform:rotate(45deg)}
+#nav .logo b{font-family:'Space Grotesk';font-size:16px;letter-spacing:.06em}
+#nav .logo b em{color:var(--cyan);font-style:normal}
+#navmenu{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none}
+#navmenu::-webkit-scrollbar{display:none}
+#navmenu a{padding:7px 12px;border-radius:8px;color:var(--mut);font-size:13px;white-space:nowrap;cursor:pointer}
+#navmenu a:hover{color:var(--txt);background:rgba(120,160,255,.07)}
+#navmenu a.on{color:var(--cyan);background:rgba(34,211,238,.09)}
+#walletbox{flex:0 0 auto;display:flex;align-items:center;gap:8px}
+.badge-net{font-size:11px;padding:4px 9px;border-radius:20px;border:1px solid var(--line2);color:var(--mut)}
+.badge-net b{color:var(--ok)}
+.chip{font-size:11px;padding:4px 9px;border-radius:7px;border:1px solid var(--line2);color:var(--mut)}
+.btn{cursor:pointer;border:none;font-family:inherit;font-size:13px;font-weight:500;
+  padding:9px 16px;border-radius:9px;transition:.15s;display:inline-flex;align-items:center;gap:7px}
+.btn-p{background:linear-gradient(135deg,var(--cyan),var(--violet));color:#03121a;font-weight:600}
+.btn-p:hover{filter:brightness(1.12);box-shadow:var(--glow-c)}
+.btn-g{background:rgba(120,160,255,.08);color:var(--txt);border:1px solid var(--line2)}
+.btn-g:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-danger{background:rgba(248,113,113,.12);color:var(--bad);border:1px solid rgba(248,113,113,.3)}
+.btn-ok{background:rgba(52,211,153,.12);color:var(--ok);border:1px solid rgba(52,211,153,.3)}
+
+/* ---------- layout ---------- */
+#app{max-width:1240px;margin:0 auto;padding:86px 22px 60px}
+.page{display:none;animation:fadeUp .35s ease}
+.page.on{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  backdrop-filter:blur(10px);padding:20px;position:relative;overflow:hidden}
+.panel::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(34,211,238,.35),rgba(139,92,246,.3),transparent)}
+.panel h3{font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);
+  display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.panel h3::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--cyan);box-shadow:var(--glow-c)}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.g23{grid-template-columns:2fr 3fr}.g32{grid-template-columns:3fr 2fr}
+@media(max-width:900px){.g2,.g3,.g4,.g23,.g32{grid-template-columns:1fr}}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.pagehead h2{font-size:24px}
+.pagehead p{color:var(--mut);margin-top:4px;max-width:640px}
+.mut{color:var(--mut)}.small{font-size:12px}.tiny{font-size:11px}
+hr.sep{border:none;border-top:1px solid var(--line);margin:14px 0}
+
+/* ---------- stats ---------- */
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;position:relative}
+.stat .lbl{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.stat .val{font-family:'Space Grotesk';font-size:26px;font-weight:700;margin-top:6px}
+.stat .sub{font-size:11px;color:var(--dim);margin-top:2px}
+.stat.c .val{color:var(--cyan)} .stat.v .val{color:var(--violet2)}
+.stat.ok .val{color:var(--ok)} .stat.bad .val{color:var(--bad)} .stat.warn .val{color:var(--warn)}
+
+/* ---------- status pills ---------- */
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+  padding:4px 11px;border-radius:20px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.pill.s-APPROVE,.pill.s-APPROVED,.pill.s-EXECUTED{background:rgba(52,211,153,.1);color:var(--ok)}
+.pill.s-REJECT,.pill.s-REJECTED,.pill.s-BLOCKED{background:rgba(248,113,113,.1);color:var(--bad)}
+.pill.s-ESCALATE,.pill.s-ESCALATED{background:rgba(251,191,36,.1);color:var(--warn)}
+.pill.s-PENDING,.pill.s-CREATED{background:rgba(96,165,250,.1);color:var(--info)}
+.pill.s-EXPIRED{background:rgba(139,152,175,.1);color:var(--mut)}
+.tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:5px;
+  background:rgba(120,160,255,.08);border:1px solid var(--line);color:var(--mut);margin:2px}
+.tag.hl{color:var(--cyan);border-color:rgba(34,211,238,.3)}
+.tag.bad{color:var(--bad);border-color:rgba(248,113,113,.3)}
+.tag.ok{color:var(--ok);border-color:rgba(52,211,153,.3)}
+
+/* ---------- tables ---------- */
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);
+  text-align:left;padding:9px 12px;border-bottom:1px solid var(--line2)}
+td{padding:11px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+tr.click{cursor:pointer;transition:.12s}
+tr.click:hover{background:rgba(34,211,238,.05)}
+.empty{padding:40px;text-align:center;color:var(--dim)}
+.empty .big{font-size:30px;margin-bottom:8px}
+
+/* ---------- forms ---------- */
+label.f{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--mut);margin:12px 0 5px}
+input,textarea,select{width:100%;background:rgba(4,8,16,.7);border:1px solid var(--line2);
+  border-radius:9px;color:var(--txt);font-family:inherit;font-size:13px;padding:9px 12px;outline:none;transition:.15s}
+input:focus,textarea:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(34,211,238,.08)}
+textarea{resize:vertical;min-height:70px}
+select option{background:#0b1220}
+
+/* ---------- toast ---------- */
+#toasts{position:fixed;bottom:18px;right:18px;z-index:99;display:flex;flex-direction:column;gap:9px;max-width:380px}
+.toast{background:rgba(10,16,30,.94);border:1px solid var(--line2);border-left:3px solid var(--cyan);
+  border-radius:11px;padding:12px 15px;font-size:13px;backdrop-filter:blur(10px);
+  animation:slideIn .25s ease;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.toast.err{border-left-color:var(--bad)} .toast.ok{border-left-color:var(--ok)} .toast.warn{border-left-color:var(--warn)}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+
+/* ---------- landing ---------- */
+#landing{max-width:1240px;margin:0 auto;padding:0 22px}
+.hero{padding:96px 0 50px;text-align:center;position:relative}
+.hero h1{font-size:clamp(42px,7vw,76px);font-weight:700;line-height:1.02;letter-spacing:.01em}
+.hero h1 .a{color:var(--cyan);text-shadow:var(--glow-c)}
+.hero h1 .b{color:var(--violet2);text-shadow:var(--glow-v)}
+.hero .tagline{font-family:'Space Grotesk';font-size:clamp(15px,2.4vw,21px);color:var(--txt);
+  letter-spacing:.24em;margin:22px 0 10px;text-transform:uppercase}
+.hero .sub{color:var(--mut);font-size:15px;max-width:560px;margin:10px auto 0}
+.hero .cta{display:flex;gap:12px;justify-content:center;margin-top:32px;flex-wrap:wrap}
+.hero .cta .btn{font-size:14px;padding:13px 26px}
+.pipe{display:flex;align-items:center;justify-content:center;gap:0;margin:52px auto 12px;flex-wrap:wrap;max-width:900px}
+.pipe .node{font-family:'Space Grotesk';font-size:12px;font-weight:600;letter-spacing:.1em;
+  padding:10px 16px;border:1px solid var(--line2);border-radius:11px;color:var(--txt);
+  background:var(--panel2);position:relative}
+.pipe .node small{display:block;font-size:9px;color:var(--dim);letter-spacing:.05em;margin-top:2px}
+.pipe .arr{color:var(--cyan);padding:0 10px;font-size:15px;animation:flow 1.6s infinite}
+@keyframes flow{0%,100%{opacity:.4;transform:translateX(-2px)}50%{opacity:1;transform:translateX(2px)}}
+.lsec{padding:44px 0}
+.lsec h2{font-size:26px;margin-bottom:10px}
+.lsec>p{color:var(--mut);max-width:640px;margin-bottom:24px}
+.cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:900px){.cards3{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:22px;transition:.2s}
+.card:hover{border-color:rgba(34,211,238,.35);transform:translateY(-3px)}
+.card .ic{font-size:22px;margin-bottom:12px}
+.card h4{font-size:15px;margin-bottom:8px}
+.card p{color:var(--mut);font-size:13px}
+.why{background:linear-gradient(135deg,rgba(34,211,238,.05),rgba(139,92,246,.05));
+  border:1px solid var(--line);border-radius:18px;padding:30px}
+.why h3{margin-bottom:12px}
+.why code{font-family:'JetBrains Mono';background:rgba(34,211,238,.08);padding:1px 7px;border-radius:5px;color:var(--cyan);font-size:12px}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 34px;color:var(--dim);font-size:12px;
+  display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+/* ---------- consensus viz ---------- */
+.cviz{display:flex;flex-direction:column;gap:0;align-items:center;padding:10px 0}
+.cviz .stage{width:100%;max-width:640px;background:rgba(120,160,255,.04);border:1px dashed var(--line2);
+  border-radius:12px;padding:14px 18px;text-align:center;position:relative}
+.cviz .stage.leader{border-color:rgba(34,211,238,.4)}
+.cviz .stage.consensus{border-color:rgba(139,92,246,.45)}
+.cviz .stage b{font-family:'Space Grotesk';letter-spacing:.14em;font-size:12px}
+.cviz .stage .sub{font-size:11px;color:var(--mut);margin-top:3px}
+.cviz .vrow{display:flex;gap:10px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.cviz .vnode{width:120px;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;
+  padding:9px 6px;text-align:center;font-size:10px;transition:.3s}
+.cviz .vnode b{display:block;font-size:10px;letter-spacing:.06em;color:var(--txt)}
+.cviz .vnode .st{margin-top:4px;font-size:9px}
+.cviz .vnode.agree{border-color:rgba(52,211,153,.4)} .cviz .vnode.agree .st{color:var(--ok)}
+.cviz .vnode.pending{border-color:var(--line2)} .cviz .vnode.pending .st{color:var(--mut)}
+.cviz .conn{width:2px;height:22px;background:linear-gradient(var(--cyan),var(--violet));opacity:.6;margin:2px 0}
+.spinner{width:15px;height:15px;border:2px solid rgba(34,211,238,.25);border-top-color:var(--cyan);
+  border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:-2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress-wrap{background:rgba(4,8,16,.8);border:1px solid var(--line2);border-radius:12px;padding:16px;margin:10px 0}
+.progress-steps{display:flex;flex-direction:column;gap:8px}
+.pstep{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mut);transition:.3s}
+.pstep.done{color:var(--ok)} .pstep.active{color:var(--cyan)}
+.pstep .dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--line2);
+  display:flex;align-items:center;justify-content:center;font-size:11px;flex:0 0 auto}
+.pstep.done .dot{border-color:var(--ok)} .pstep.active .dot{border-color:var(--cyan);box-shadow:var(--glow-c)}
+
+/* ---------- misc ---------- */
+.paused-banner{background:linear-gradient(90deg,rgba(248,113,113,.15),rgba(248,113,113,.05));
+  border:1px solid rgba(248,113,113,.4);border-radius:12px;padding:13px 18px;margin-bottom:16px;
+  display:flex;align-items:center;gap:11px;font-weight:600;color:var(--bad);
+  animation:pulse-border 1.6s infinite}
+@keyframes pulse-border{0%,100%{border-color:rgba(248,113,113,.4)}50%{border-color:rgba(248,113,113,.75)}}
+.kv{display:grid;grid-template-columns:190px 1fr;gap:7px 14px;font-size:13px}
+.kv .k{color:var(--mut)}
+.kv .v{word-break:break-all}
+.hash{font-family:'JetBrains Mono';font-size:11.5px;color:var(--violet2)}
+.breadcrumb{font-size:12px;color:var(--dim);margin-bottom:12px}
+.breadcrumb a{color:var(--mut);cursor:pointer}
+.breadcrumb a:hover{color:var(--cyan)}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:700px){.facts{grid-template-columns:1fr}}
+.fact{display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(120,160,255,.05);
+  border:1px solid var(--line);border-radius:9px;padding:9px 13px;font-size:12px}
+.fact .fname{color:var(--mut)}
+.fb{font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;letter-spacing:.05em}
+.fb.t{background:rgba(248,113,113,.14);color:var(--bad)} .fb.f{background:rgba(52,211,153,.14);color:var(--ok)}
+.reason-box{border-left:3px solid var(--cyan);background:rgba(34,211,238,.05);padding:14px 17px;border-radius:0 11px 11px 0;margin:12px 0}
+.reason-box.bad{border-left-color:var(--bad);background:rgba(248,113,113,.05)}
+.reason-box.warn{border-left-color:var(--warn);background:rgba(251,191,36,.05)}
+.gauge{position:relative;width:104px;height:104px;flex:0 0 auto}
+.gauge svg{transform:rotate(-90deg)}
+.gauge .gv{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge .gv b{font-family:'Space Grotesk';font-size:24px}
+.gauge .gv span{font-size:9px;letter-spacing:.12em;color:var(--mut);text-transform:uppercase}
+.bar{height:7px;border-radius:5px;background:rgba(120,160,255,.1);overflow:hidden}
+.bar>div{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--cyan),var(--violet));transition:width .5s}
+.filterrow{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.filterrow input,.filterrow select{width:auto;min-width:130px;flex:1}
+.filterrow .btn{flex:0 0 auto}
+.demo-tag{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.1em;
+  padding:4px 10px;border-radius:6px;background:rgba(139,92,246,.14);color:var(--violet2);border:1px solid rgba(139,92,246,.35)}
+.demo-tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--violet2);animation:pulse 1.6s infinite}
+.live-tag{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.1em;
+  padding:4px 10px;border-radius:6px;background:rgba(52,211,153,.12);color:var(--ok);border:1px solid rgba(52,211,153,.35)}
+.live-tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ok);animation:pulse 1.6s infinite}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="logo" data-route="/">
+    <div class="mark"></div><b>AEGIS<em>FLOW</em></b>
+  </div>
+  <div id="navmenu">
+    <a data-route="/dashboard">Dashboard</a>
+    <a data-route="/agents">Agents</a>
+    <a data-route="/actions">Actions</a>
+    <a data-route="/policies">Policies</a>
+    <a data-route="/consensus">Consensus</a>
+    <a data-route="/audit">Audit</a>
+    <a data-route="/settings">Settings</a>
+  </div>
+  <div id="walletbox">
+    <span class="badge-net">STUDIONET <b id="netdot">●</b></span>
+    <button class="btn btn-g btn-sm" id="btn-wallet">Connect Wallet</button>
+  </div>
+</nav>
+
+<div id="app">
+  <!-- ============ LANDING ============ -->
+  <div class="page" id="pg-landing">
+    <div class="hero">
+      <h1>AEGIS<span class="a">FLOW</span></h1>
+      <div class="tagline">Autonomous Agents. <span style="color:var(--cyan)">Consensus-Governed</span> Actions.</div>
+      <p class="sub">An execution control protocol for autonomous agents, powered by GenLayer consensus. Every high-impact agent action must pass decentralized AI validation before it can execute.</p>
+      <div class="cta">
+        <button class="btn btn-p" onclick="go('/dashboard')">Launch Dashboard →</button>
+        <button class="btn btn-g" onclick="go('/consensus')">View Live Demo</button>
+      </div>
+      <div class="pipe">
+        <div class="node">AGENT<small>autonomous operator</small></div><div class="arr">→</div>
+        <div class="node">INTENT<small>action proposal</small></div><div class="arr">→</div>
+        <div class="node">POLICY<small>human rules</small></div><div class="arr">→</div>
+        <div class="node" style="border-color:rgba(139,92,246,.5)">CONSENSUS<small>GenLayer validators</small></div><div class="arr">→</div>
+        <div class="node">DECISION<small>approve / reject / escalate</small></div><div class="arr">→</div>
+        <div class="node" style="border-color:rgba(52,211,153,.5)">EXECUTION<small>deterministic</small></div>
+      </div>
+    </div>
+
+    <div class="lsec">
+      <h2>The problem</h2>
+      <p>AI agents are starting to act directly on blockchains. Deterministic smart contracts can enforce arithmetic limits — but they cannot read a natural-language policy, weigh external evidence, or judge whether an agent's stated intent makes sense. And a single centralized AI gatekeeper means whoever controls the model controls the agent.</p>
+      <div class="cards3">
+        <div class="card"><div class="ic">🧠</div><h4>Policies humans actually write</h4><p>"Only infrastructure payments up to 50 USDC. Nothing that looks like gambling." Validators interpret this semantic policy — no Solidity contract can.</p></div>
+        <div class="card"><div class="ic">🌐</div><h4>External evidence, verified</h4><p>Recipient reputation and risk flags are fetched from a content-pinned registry, keccak256-verified on-chain by every validator on every run.</p></div>
+        <div class="card"><div class="ic">🛡️</div><h4>LLM judges, contract enforces</h4><p>Consensus labels the semantics; deterministic gates clamp what the LLM can allow. A fooled model still cannot authorize a limit violation or a flagged target.</p></div>
+      </div>
+    </div>
+
+    <div class="lsec">
+      <div class="why">
+        <h3>Why GenLayer consensus is load-bearing, not decorative</h3>
+        <p style="color:var(--mut);font-size:13.5px">The question this protocol answers: <i>"what must NOT depend on my frontend, my backend, or one centralized AI?"</i> — <b>whether an autonomous agent's action complies with its human-defined policy under current external context.</b> That decision lives inside the Intelligent Contract. The leader proposes a judgment; every validator independently re-fetches the pinned evidence, recomputes the same deterministic facts, re-runs the arbitration, and compares only the substance — the fact set, criterion labels, and evidence hash. The final verdict is <i>derived by contract code</i> from consensus-checked inputs. Money only moves in the deterministic enforcement layer.</p>
+        <div style="margin-top:14px"><span class="tag hl">APPROVE</span><span class="tag ok">policy-compliant + evidence-safe</span> <span class="tag bad">REJECT</span><span class="tag">hard limit / flagged target / semantic FAIL</span> <span class="tag" style="color:var(--warn);border-color:rgba(251,191,36,.35)">ESCALATE</span><span class="tag">uncertainty is never approval</span></div>
+      </div>
+    </div>
+
+    <div class="lsec">
+      <h2>Built for the demo</h2>
+      <p>Five one-click scenarios run through real GenLayer consensus on Studionet: safe payment → APPROVE, over-limit → REJECT, unverified recipient → ESCALATE, flagged target → REJECT despite a fooled LLM, and a policy version bump that kills a stale v1 approval at the enforcement gate.</p>
+      <div class="cards3">
+        <div class="card"><div class="ic">✅</div><h4>S1 · Safe payment</h4><p>25 USDC to a known infra provider, under every limit → APPROVE → EXECUTE.</p></div>
+        <div class="card"><div class="ic">⛔</div><h4>S2 · Budget violation</h4><p>100 USDC against a 50 USDC single-action limit → deterministic REJECT.</p></div>
+        <div class="card"><div class="ic">⚠️</div><h4>S3 · New recipient</h4><p>20 USDC to an unverified vendor → ESCALATE for human review → manual resolution.</p></div>
+        <div class="card"><div class="ic">🏴</div><h4>S4 · Flagged evidence</h4><p>Registry flags the target as a phishing drainer → REJECT even if the LLM is fooled.</p></div>
+        <div class="card"><div class="ic">🔁</div><h4>S5 · Policy update</h4><p>Policy v1→v2 while an approval is outstanding → v1 authorization dies at execution.</p></div>
+        <div class="card"><div class="ic">⏸️</div><h4>Emergency pause</h4><p>Owner circuit-breaker freezes new high-impact activity instantly; everything stays auditable.</p></div>
+      </div>
+    </div>
+    <footer>
+      <div>AEGISFLOW — Agent Tank Hackathon · Autonomous Protocols track · Built on GenLayer</div>
+      <div><a href="https://explorer-studio.genlayer.com" target="_blank">Explorer ↗</a> · <a href="https://docs.genlayer.com" target="_blank">GenLayer Docs ↗</a></div>
+    </footer>
+  </div>
+
+  <!-- ============ DASHBOARD ============ -->
+  <div class="page" id="pg-dashboard">
+    <div class="pagehead">
+      <div><h2>Protocol Overview</h2><p class="mut" id="dash-sub">Live state from the AegisFlow Intelligent Contract on Studionet.</p></div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap">
+        <button class="btn btn-g btn-sm" onclick="refreshAll()">↻ Refresh</button>
+        <button class="btn btn-p btn-sm" onclick="go('/actions')">Run a scenario</button>
+      </div>
+    </div>
+    <div id="pause-banner"></div>
+    <div class="grid g4" id="stat-cards" style="margin-bottom:16px"></div>
+    <div class="grid g4" id="rate-cards" style="margin-bottom:18px"></div>
+    <div class="grid g23">
+      <div class="panel">
+        <h3>Protocol Health</h3>
+        <div id="health-body"></div>
+      </div>
+      <div class="panel">
+        <h3>Live Protocol Activity</h3>
+        <div id="feed" style="max-height:430px;overflow-y:auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ AGENTS ============ -->
+  <div class="page" id="pg-agents">
+    <div class="pagehead">
+      <div><h2>Agents</h2><p class="mut">Registered autonomous operators, each bound to a policy with hard budget rails.</p></div>
+      <button class="btn btn-p btn-sm" id="btn-show-newagent">+ Register Agent</button>
+    </div>
+    <div class="panel" id="newagent-panel" style="display:none;margin-bottom:16px">
+      <h3>Register Agent</h3>
+      <div class="grid g3">
+        <div><label class="f">Agent ID</label><input id="na-id" placeholder="research-agent-01"></div>
+        <div><label class="f">Name</label><input id="na-name" placeholder="Research Agent"></div>
+        <div><label class="f">Policy</label><select id="na-policy"></select></div>
+      </div>
+      <div class="grid g3">
+        <div><label class="f">Description</label><input id="na-desc" placeholder="What this agent does"></div>
+        <div><label class="f">Risk level</label><select id="na-risk"><option>LOW</option><option>MEDIUM</option><option>HIGH</option></select></div>
+        <div><label class="f">Display budget (milli-units)</label><input id="na-budget" type="number" value="150000"></div>
+      </div>
+      <div style="margin-top:14px"><button class="btn btn-p btn-sm" id="btn-do-newagent">Register on-chain</button></div>
+    </div>
+    <div class="panel"><h3>Registered Agents</h3><div id="agents-body"></div></div>
+  </div>
+  <div class="page" id="pg-agent-detail">
+    <div class="breadcrumb"><a onclick="go('/agents')">Agents</a> / <span id="agd-crumb"></span></div>
+    <div class="pagehead"><div><h2 id="agd-name">Agent</h2><p class="mut" id="agd-desc"></p></div></div>
+    <div class="grid g4" id="agd-stats"></div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="panel"><h3>Identity & Policy</h3><div id="agd-identity" class="kv"></div></div>
+      <div class="panel"><h3>Budget Rails</h3><div id="agd-budget"></div></div>
+    </div>
+    <div class="panel" style="margin-top:14px"><h3>Recent Actions</h3><div id="agd-actions"></div></div>
+  </div>
+
+  <!-- ============ ACTIONS ============ -->
+  <div class="page" id="pg-actions">
+    <div class="pagehead">
+      <div><h2>Action Queue</h2><p class="mut">Every intent, its consensus decision, and enforcement status.</p></div>
+      <button class="btn btn-p btn-sm" id="btn-show-submit">+ Submit Action Intent</button>
+    </div>
+    <div class="panel" id="submit-panel" style="display:none;margin-bottom:16px">
+      <h3>Submit Action Intent</h3>
+      <div class="grid g3">
+        <div><label class="f">Agent</label><select id="su-agent"></select></div>
+        <div><label class="f">Action type</label><select id="su-type"><option>TRANSFER</option><option>REBALANCE</option><option>GOVERNANCE_SUBMIT</option><option>PROCUREMENT</option><option>DATA_PUBLISH</option></select></div>
+        <div><label class="f">Target (0x…)</label><input id="su-target" class="mono" placeholder="0x…"></div>
+      </div>
+      <div class="grid g4">
+        <div><label class="f">Amount (milli-units)</label><input id="su-amount" type="number" value="25000"></div>
+        <div><label class="f">Asset</label><input id="su-asset" value="USDC"></div>
+        <div><label class="f">Expires in (s)</label><input id="su-expiry" type="number" value="3600"></div>
+        <div><label class="f">Context hash (optional)</label><input id="su-ctx" placeholder=""></div>
+      </div>
+      <label class="f">Stated reason (judged semantically by consensus)</label>
+      <textarea id="su-reason">Pay infrastructure provider</textarea>
+      <div style="margin-top:14px;display:flex;gap:10px">
+        <button class="btn btn-p btn-sm" id="btn-do-submit">Submit intent</button>
+        <button class="btn btn-g btn-sm" onclick="go('/consensus')">Then run consensus →</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Demo Scenarios — one click, real consensus</h3>
+      <p class="small mut" style="margin-bottom:12px">Each scenario submits a real action intent and runs it through live GenLayer consensus (~60–120 s). Scenario 1 additionally executes the payment after approval.</p>
+      <div class="grid g3" id="scenario-cards"></div>
+    </div>
+    <div class="panel" style="margin-top:16px"><h3>All Actions</h3><div id="actions-body"></div></div>
+  </div>
+  <div class="page" id="pg-action-detail">
+    <div class="breadcrumb"><a onclick="go('/actions')">Actions</a> / <span id="ac-crumb"></span></div>
+    <div id="ac-progwrap"></div>
+    <div class="grid g23" id="ac-detail-grid">
+      <div>
+        <div class="panel"><h3>Action Intent</h3><div id="ac-intent" class="kv"></div></div>
+        <div class="panel" style="margin-top:14px"><h3>Objective Facts (deterministic)</h3><div id="ac-facts" class="facts"></div></div>
+        <div class="panel" style="margin-top:14px"><h3>External Evidence Used</h3><div id="ac-evidence"></div></div>
+      </div>
+      <div>
+        <div class="panel" id="ac-decision-panel"><h3>Consensus Decision</h3><div id="ac-decision"></div></div>
+        <div class="panel" style="margin-top:14px"><h3>Consensus Timeline</h3><div id="ac-timeline" class="cviz"></div></div>
+        <div class="panel" style="margin-top:14px" id="ac-actions-panel"><h3>Resolve</h3><div id="ac-resolve"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ POLICIES ============ -->
+  <div class="page" id="pg-policies">
+    <div class="pagehead">
+      <div><h2>Policies</h2><p class="mut">Human-readable policy text + machine constraints. Versioned; every decision cites the exact version it was judged under.</p></div>
+      <button class="btn btn-p btn-sm" id="btn-show-newpolicy">+ Register Policy</button>
+    </div>
+    <div class="panel" id="newpolicy-panel" style="display:none;margin-bottom:16px">
+      <h3>Register Policy</h3>
+      <div class="grid g3">
+        <div><label class="f">Policy ID</label><input id="np-id" placeholder="research-policy"></div>
+        <div><label class="f">Name</label><input id="np-name" placeholder="Research Agent Policy"></div>
+        <div><label class="f">Description</label><input id="np-desc" placeholder="…"></div>
+      </div>
+      <label class="f">Natural language policy (interpreted by GenLayer validators)</label>
+      <textarea id="np-nl" rows="3" placeholder="You are managing…"></textarea>
+      <div class="grid g4" style="margin-top:6px">
+        <div><label class="f">Max single action (milli)</label><input id="np-max" type="number" value="50000"></div>
+        <div><label class="f">Daily budget (milli)</label><input id="np-daily" type="number" value="150000"></div>
+        <div><label class="f">Allowed types</label><input id="np-types" value="TRANSFER"></div>
+        <div><label class="f">Restricted targets (comma)</label><input id="np-restricted" placeholder=""></div>
+      </div>
+      <div class="grid g4">
+        <div><label class="f">Cooldown (s)</label><input id="np-cooldown" type="number" value="0"></div>
+        <div><label class="f">Escalate above (milli)</label><input id="np-esc" type="number" value="50000"></div>
+        <div><label class="f">Verify new recipients</label><select id="np-verify"><option value="true">yes</option><option value="false">no</option></select></div>
+        <div><label class="f">Reject flagged targets</label><select id="np-rejectflag"><option value="true">yes</option><option value="false">no</option></select></div>
+      </div>
+      <div style="margin-top:14px"><button class="btn btn-p btn-sm" id="btn-do-newpolicy">Register on-chain</button></div>
+    </div>
+    <div id="policies-body"></div>
+  </div>
+  <div class="page" id="pg-policy-detail">
+    <div class="breadcrumb"><a onclick="go('/policies')">Policies</a> / <span id="pd-crumb"></span></div>
+    <div class="grid g2">
+      <div class="panel"><h3>Human Policy</h3><div id="pd-nl" style="white-space:pre-wrap;color:var(--txt);font-size:13.5px;line-height:1.7"></div></div>
+      <div class="panel"><h3>Machine Enforcement</h3><div id="pd-machine" class="kv"></div></div>
+    </div>
+    <div class="panel" style="margin-top:14px"><h3>Identity & Version</h3><div id="pd-meta" class="kv"></div></div>
+  </div>
+
+  <!-- ============ CONSENSUS ============ -->
+  <div class="page" id="pg-consensus">
+    <div class="pagehead">
+      <div><h2>Consensus Activity</h2><p class="mut">How GenLayer decides. The leader proposes; validators independently re-verify the substance; the contract derives the verdict.</p></div>
+    </div>
+    <div class="grid g32">
+      <div class="panel">
+        <h3>Leader / Validator Flow</h3>
+        <div class="cviz" id="consensus-viz"></div>
+        <p class="tiny mut" style="margin-top:8px">The leader receipt and finalization are real on-chain data. The per-validator grid visualizes the Studionet validator set; unless the receipt exposes per-validator votes, it is labeled <span class="demo-tag">DEMO MODE</span>. The consensus result itself — the decision, criteria labels, facts, and evidence hash — is real contract state written by real GenLayer consensus.</p>
+      </div>
+      <div class="panel">
+        <h3>Equivalence Principle</h3>
+        <p class="small mut">Validators do NOT compare free-text reasoning. Each validator independently:</p>
+        <div style="margin-top:10px" class="small">
+          <div class="fact"><span class="fname">1 · re-fetch pinned registry</span><span class="fb f">keccak verified</span></div>
+          <div class="fact" style="margin-top:7px"><span class="fname">2 · recompute deterministic facts</span><span class="fb f">9 booleans</span></div>
+          <div class="fact" style="margin-top:7px"><span class="fname">3 · re-run LLM judgment</span><span class="fb f">same prompt</span></div>
+          <div class="fact" style="margin-top:7px"><span class="fname">4 · compare substance only</span><span class="fb f">facts + labels + hash</span></div>
+        </div>
+        <p class="tiny mut" style="margin-top:12px">A malicious or hallucinating leader whose facts, labels, or evidence hash diverge is rejected by validators. A fooled LLM is still clamped by deterministic gates. Every failure mode — dead fetch, hash mismatch, malformed JSON — escalates; none can approve.</p>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:16px"><h3>Recent Decisions</h3><div id="consensus-body"></div></div>
+  </div>
+
+  <!-- ============ AUDIT ============ -->
+  <div class="page" id="pg-audit">
+    <div class="pagehead"><div><h2>Audit Explorer</h2><p class="mut">Immutable-style on-chain audit trail — every submit, decision, execution, block, and resolution.</p></div></div>
+    <div class="panel">
+      <div class="filterrow">
+        <input id="au-search" placeholder="Search action ID / agent / tx…">
+        <select id="au-kind"><option value="">All events</option><option>action_submitted</option><option>decision</option><option>action_executed</option><option>execution_blocked</option><option>escalation_resolved</option><option>policy_registered</option><option>policy_updated</option><option>agent_registered</option><option>action_expired</option><option>protocol_paused</option><option>protocol_resumed</option></select>
+        <select id="au-decision"><option value="">All decisions</option><option>APPROVE</option><option>REJECT</option><option>ESCALATE</option></select>
+        <button class="btn btn-g btn-sm" onclick="renderAudit()">Apply</button>
+      </div>
+      <div id="audit-body"></div>
+    </div>
+  </div>
+
+  <!-- ============ SETTINGS ============ -->
+  <div class="page" id="pg-settings">
+    <div class="pagehead"><div><h2>Protocol Configuration</h2><p class="mut">Contract connection, wallet, owner controls, and evidence registry pin.</p></div></div>
+    <div class="grid g2">
+      <div class="panel">
+        <h3>Contract Connection</h3>
+        <label class="f">Contract address (Studionet)</label>
+        <input id="cfg-address" class="mono">
+        <div style="margin-top:12px;display:flex;gap:9px">
+          <button class="btn btn-p btn-sm" id="btn-save-cfg">Save & reconnect</button>
+          <button class="btn btn-g btn-sm" onclick="window.open('https://explorer-studio.genlayer.com/address/'+CFG.address,'_blank')">View on Explorer ↗</button>
+        </div>
+        <div class="kv" style="margin-top:16px" id="cfg-info"></div>
+      </div>
+      <div class="panel">
+        <h3>Owner Controls · Circuit Breaker</h3>
+        <p class="small mut">Protocol owner may PAUSE the protocol: new high-impact actions and executions freeze instantly; existing actions remain auditable.</p>
+        <div id="owner-status" style="margin:14px 0"></div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-danger btn-sm" id="btn-pause">⏸ PAUSE PROTOCOL</button>
+          <button class="btn btn-ok btn-sm" id="btn-unpause">▶ RESUME</button>
+        </div>
+        <hr class="sep">
+        <h3 style="margin-top:6px">Wallet</h3>
+        <div id="wallet-info" class="small"></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <h3>Evidence Registry Pin</h3>
+      <div class="kv" id="registry-info"></div>
+      <p class="tiny mut" style="margin-top:10px">The registry is fetched from the pinned immutable URL and its keccak256 is verified on-chain by the leader and every validator on every consensus run. The contract was deployed with these exact pins.</p>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+<script src="genlayer-sdk.bundle.js"></script>
+<script>
+"use strict";
+/* ============================================================ config */
+const DEFAULTS = { address: "" }; // injected after deploy
+let CFG = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem("aegisflow_cfg") || "{}"));
+const KNOWN="0x1010101010101010101010101010101010101010",
+      NEWRCPT="0x2020202020202020202020202020202020202020",
+      FLAGGED="0x3030303030303030303030303030303030303030";
+
+/* ============================================================ sdk */
+const SDK = window.GenLayerSDK;
+let client = null;
+function initClient() {
+  client = SDK.createClient({ chain: SDK.studionet });
+}
+async function readContract(fn, args) {
+  const r = await client.readContract({ address: CFG.address, functionName: fn, args: args || [] });
+  return typeof r === "string" ? JSON.parse(r) : r;
+}
+async function sendWrite(fn, args, label) {
+  const w = activeWallet(); if (!w) throw new Error("No wallet connected");
+  const txHash = await client.writeContract({ address: CFG.address, functionName: fn, args, account: w.acct });
+  const receipt = await Promise.race([
+    client.waitForTransactionReceipt({ hash: txHash, status: SDK.TransactionStatus.ACCEPTED, interval: 5000, retries: 60 }),
+    new Promise((_, rej) => setTimeout(() => rej(new Error("timeout waiting for consensus (tx may still finalize)")), 300000))
+  ]);
+  let exec = null, stderr = "";
+  try {
+    const leader = (receipt && receipt.consensus_data && receipt.consensus_data.leader_receipt) || [];
+    if (leader.length) { exec = leader[0].execution_result;
+      stderr = String(((leader[0].genvm_result||{}).stderr) || ""); }
+    if (!exec) exec = receipt && receipt.tx_execution_result_name;
+  } catch (e) {}
+  if (exec === "FAILURE" || exec === "ERROR") {
+    const m = (stderr.match(/AssertionError: (.+)/) || [])[1];
+    throw new Error((m || (label + " reverted on chain")).slice(0, 160));
+  }
+  return { txHash, receipt };
+}
+
+/* ============================================================ wallet */
+function wallets() { return JSON.parse(localStorage.getItem("aegisflow_wallets") || "[]"); }
+function activeWalletIdx() { const i = localStorage.getItem("aegisflow_active"); return wallets().length ? (i === null ? 0 : Math.min(+i, wallets().length - 1)) : -1; }
+function activeWallet() { const ws = wallets(), i = activeWalletIdx(); return i >= 0 ? ws[i] : null; }
+async function ensureWallet() {
+  if (activeWallet()) return activeWallet();
+  const pk = SDK.generatePrivateKey();
+  const acct = SDK.createAccount(pk);
+  const w = { name: "Operator " + acct.address.slice(2, 6), pk, acct: null };
+  const ws = wallets(); ws.push(w); localStorage.setItem("aegisflow_wallets", JSON.stringify(ws));
+  localStorage.setItem("aegisflow_active", String(ws.length - 1));
+  await activateWallet(ws.length - 1, true);
+  return w;
+}
+async function activateWallet(i, silent) {
+  const ws = wallets(); if (!ws[i]) return;
+  ws[i].acct = SDK.createAccount(ws[i].pk);
+  localStorage.setItem("aegisflow_active", String(i));
+  try {
+    await client.request({ method: "sim_fundAccount", params: [ws[i].acct.address, 5e18] });
+    if (!silent) toast("Wallet funded with 5 GEN (faucet)", "ok");
+  } catch (e) { if (!silent) toast("Faucet skipped: " + String(e).slice(0, 80), "warn"); }
+  renderWalletBox();
+}
+function renderWalletBox() {
+  const w = activeWallet(), el = document.getElementById("btn-wallet");
+  if (w && w.acct) { el.textContent = w.name + " · " + w.acct.address.slice(0, 8) + "…"; el.className = "btn btn-g btn-sm"; }
+  else { el.textContent = "Connect Wallet"; el.className = "btn btn-p btn-sm"; }
+}
+document.getElementById("btn-wallet").onclick = async () => {
+  if (activeWallet()) { const ws = wallets(); await activateWallet(activeWalletIdx()); showWalletList(); }
+  else { await ensureWallet(); toast("Burner wallet created & funded", "ok"); }
+};
+function showWalletList() {
+  const ws = wallets(), i = activeWalletIdx();
+  let h = "<div style='margin-top:10px'>";
+  ws.forEach((w, k) => { h += `<div class="fact" style="margin-bottom:6px"><span class="fname mono">${w.acct ? w.acct.address : w.pk.slice(0, 14)}</span>${k === i ? '<span class="fb f">ACTIVE</span>' : `<button class="btn btn-g btn-sm" onclick="activateWallet(${k})">use</button>`}</div>`; });
+  h += "</div>";
+  const wi = document.getElementById("wallet-info"); if (wi) wi.innerHTML = h;
+}
+
+/* ============================================================ toast */
+function toast(msg, kind) {
+  const t = document.createElement("div");
+  t.className = "toast " + (kind || "");
+  t.innerHTML = msg;
+  document.getElementById("toasts").appendChild(t);
+  setTimeout(() => { t.style.opacity = "0"; t.style.transition = ".4s"; setTimeout(() => t.remove(), 400); }, 5200);
+}
+
+/* ============================================================ router */
+const ROUTES = ["/", "/dashboard", "/agents", "/actions", "/policies", "/consensus", "/audit", "/settings"];
+function go(route, arg) {
+  location.hash = "#" + route + (arg ? "/" + encodeURIComponent(arg) : "");
+}
+window.addEventListener("hashchange", route);
+function route() {
+  let h = (location.hash || "#/").slice(1).split("/").map(decodeURIComponent);
+  let base = h[0] || "/", arg = h[1] || null;
+  if (base === "") base = "/";
+  if (!document.getElementById("pg-" + pageId(base, arg))) base = "/";
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("on"));
+  document.querySelectorAll("#navmenu a").forEach(a => a.classList.toggle("on", a.dataset.route === base));
+  const pg = document.getElementById("pg-" + pageId(base, arg));
+  pg.classList.add("on");
+  const render = { "/": () => {}, "/dashboard": renderDashboard, "/agents": renderAgents,
+    "/actions": renderActions, "/policies": renderPolicies, "/consensus": renderConsensusPage,
+    "/audit": renderAudit, "/settings": renderSettings,
+    "/agents/:id": () => renderAgentDetail(arg), "/actions/:id": () => renderActionDetail(arg),
+    "/policies/:id": () => renderPolicyDetail(arg) }[base === "/agents" && arg ? "/agents/:id" : base === "/actions" && arg ? "/actions/:id" : base === "/policies" && arg ? "/policies/:id" : base];
+  if (render) Promise.resolve(render()).catch(e => { toast("Load failed: " + String(e.message || e).slice(0, 120), "err"); });
+}
+function pageId(base, arg) {
+  if (base === "/agents" && arg) return "agent-detail";
+  if (base === "/actions" && arg) return "action-detail";
+  if (base === "/policies" && arg) return "policy-detail";
+  if (base === "/") return "landing";
+  return base.slice(1);
+}
+document.querySelectorAll("[data-route]").forEach(el => el.onclick = () => go(el.dataset.route));
+
+/* ============================================================ helpers */
+const $ = id => document.getElementById(id);
+function fmtAmount(m) { return (m / 1000).toLocaleString(undefined, { maximumFractionDigits: 2 }); }
+function pill(s) { return `<span class="pill s-${s}">${s}</span>`; }
+function short(h, n) { return h ? h.slice(0, n || 10) + "…" : "—"; }
+function fb(b) { return `<span class="fb ${b ? "t" : "f"}">${b ? "TRUE" : "FALSE"}</span>`; }
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function riskColor(s) { return s <= 29 ? "var(--ok)" : s <= 59 ? "var(--info)" : s <= 79 ? "var(--warn)" : "var(--bad)"; }
+function timeAgo(ts) { if (!ts) return "—"; const d = Date.now() / 1000 - ts; if (d < 90) return "just now";
+  if (d < 3600) return Math.round(d / 60) + "m ago"; if (d < 86400) return Math.round(d / 3600) + "h ago"; return Math.round(d / 86400) + "d ago"; }
+async function apiStats() { return readContract("get_protocol_stats", []); }
+
+/* ============================================================ dashboard */
+async function renderDashboard() {
+  const s = await apiStats();
+  $("pause-banner").innerHTML = s.protocol_paused
+    ? `<div class="paused-banner"><span style="font-size:18px">⏸</span> PROTOCOL PAUSED — new high-impact actions and executions are frozen. All actions remain auditable.</div>` : "";
+  const cards = [
+    ["Total Agents", (await readContract("list_agents", [])).agents.length, "", "v"],
+    ["Active Policies", (await readContract("list_policies", [])).policies.length, "", "c"],
+    ["Pending Actions", s.pending, "awaiting consensus", ""],
+    ["Approved", s.approved, fmtAmount(s.authorized_millis) + " USDC authorized", "ok"],
+    ["Rejected", s.rejected, fmtAmount(s.blocked_millis) + " USDC blocked", "bad"],
+    ["Escalated", s.escalated, "human review queue", "warn"],
+    ["Executed", s.executed, "deterministic enforcement", "ok"],
+    ["Audit Entries", s.audit_count, "ring buffer (bounded)", "v"],
+  ];
+  $("stat-cards").innerHTML = cards.map(c =>
+    `<div class="stat ${c[3]}"><div class="lbl">${c[0]}</div><div class="val">${c[1]}</div><div class="sub">${c[2] || "&nbsp;"}</div></div>`).join("");
+  const decided = s.decided || 1;
+  const rates = [
+    ["Approval Rate", s.approval_rate], ["Rejection Rate", s.rejection_rate], ["Escalation Rate", s.escalation_rate],
+  ];
+  $("rate-cards").innerHTML = rates.map(r =>
+    `<div class="stat"><div class="lbl">${r[0]}</div><div class="val" style="font-size:22px">${r[1]}%</div>
+     <div class="bar" style="margin-top:8px"><div style="width:${r[1]}%"></div></div></div>`).join("")
+    + `<div class="stat"><div class="lbl">Consensus Success</div><div class="val" style="font-size:22px;color:var(--ok)">${s.decided === s.total_actions ? "100%" : Math.round(100 * s.decided / Math.max(1, s.total_actions)) + "%"}</div><div class="sub">${s.decided}/${s.total_actions} decided</div></div>`;
+  $("health-body").innerHTML = `
+    <div class="kv">
+      <div class="k">Protocol status</div><div class="v">${s.protocol_paused ? '<span class="pill s-REJECTED">PAUSED</span>' : '<span class="pill s-APPROVED">ACTIVE</span>'}</div>
+      <div class="k">Owner</div><div class="v mono small">${esc(s.owner)}</div>
+      <div class="k">Total authorized</div><div class="v" style="color:var(--ok)">${fmtAmount(s.authorized_millis)} USDC</div>
+      <div class="k">Total blocked</div><div class="v" style="color:var(--bad)">${fmtAmount(s.blocked_millis)} USDC</div>
+      <div class="k">Next action seq</div><div class="v mono">#${s.next_action_seq}</div>
+    </div>
+    <p class="tiny mut" style="margin-top:12px">All statistics are derived from on-chain application state — nothing here is simulated.</p>`;
+  const audit = await readContract("get_audit_page", [Math.max(0, s.audit_count > 240 ? s.next_action_seq - 40 : 0), 40]);
+  let feed = "";
+  audit.entries.slice().reverse().forEach(e => {
+    const d = e.decision ? pill(e.decision === "APPROVE" ? "APPROVED" : e.decision === "REJECT" ? "REJECTED" : e.decision === "ESCALATE" ? "ESCALATED" : e.decision) : "";
+    const icon = { action_submitted: "📥", decision: "⚖️", action_executed: "⚡", execution_blocked: "🚫", escalation_resolved: "🧑‍⚖️", policy_registered: "📜", policy_updated: "📜", agent_registered: "🤖", action_expired: "⌛", protocol_paused: "⏸", protocol_resumed: "▶" }[e.kind] || "•";
+    feed += `<div style="display:flex;gap:11px;padding:9px 4px;border-bottom:1px solid var(--line);align-items:baseline">
+      <span class="mono tiny" style="color:var(--dim);flex:0 0 62px">${new Date((e.at + 0) * 1000).toISOString().slice(11, 19)}</span>
+      <span>${icon}</span>
+      <span style="flex:1;font-size:12.5px">${esc(e.kind.replace(/_/g, " "))}
+        ${e.agent_id ? "· <b>" + esc(e.agent_id) + "</b>" : ""}${e.policy_id ? "· <b>" + esc(e.policy_id) + "</b>" : ""}
+        ${e.amount_millis ? "· " + fmtAmount(e.amount_millis) + " USDC" : ""}</span>
+      ${d}
+    </div>`;
+  });
+  $("feed").innerHTML = feed || '<div class="empty"><div class="big">🛰️</div>No activity yet — run a demo scenario from the Actions page.</div>';
+}
+
+/* ============================================================ agents */
+async function renderAgents() {
+  $("newagent-panel").style.display = "none";
+  const pols = (await readContract("list_policies", [])).policies;
+  $("na-policy").innerHTML = pols.map(p => `<option value="${esc(p.policy_id)}">${esc(p.name)} (${esc(p.version_label)})</option>`).join("");
+  const agents = (await readContract("list_agents", [])).agents;
+  if (!agents.length) { $("agents-body").innerHTML = '<div class="empty"><div class="big">🤖</div>No agents registered yet.</div>'; return; }
+  $("agents-body").innerHTML = `<table><thead><tr><th>Agent</th><th>Policy</th><th>Status</th><th>Risk</th><th>Actions</th><th>Approved</th><th>Rejected</th><th>Escalated</th><th>Spent today</th></tr></thead><tbody>` +
+    agents.map(a => `<tr class="click" onclick="go('/agents','${esc(a.agent_id)}')">
+      <td><b>${esc(a.name)}</b><div class="tiny mut mono">${esc(a.agent_id)}</div></td>
+      <td class="small">${esc(a.policy_id)}</td><td>${pill(a.status)}</td>
+      <td><span class="tag ${a.risk_level === "LOW" ? "ok" : a.risk_level === "MEDIUM" ? "hl" : "bad"}">${esc(a.risk_level)}</span></td>
+      <td>${a.action_count}</td><td style="color:var(--ok)">${a.approved_count}</td>
+      <td style="color:var(--bad)">${a.rejected_count}</td><td style="color:var(--warn)">${a.escalated_count}</td>
+      <td class="mono small">${fmtAmount(a.daily_spent_millis)} USDC</td></tr>`).join("") + "</tbody></table>";
+}
+async function renderAgentDetail(id) {
+  const a = await readContract("get_agent", [id]);
+  if (a.error) return toast("Agent not found", "err");
+  $("agd-crumb").textContent = id; $("agd-name").textContent = a.name; $("agd-desc").textContent = a.description;
+  $("agd-stats").innerHTML = [
+    ["Actions", a.action_count, ""], ["Approved", a.approved_count, "ok"], ["Rejected", a.rejected_count, "bad"],
+    ["Escalated", a.escalated_count, "warn"], ["Executed", a.executed_count, "ok"],
+    ["Pending exposure", fmtAmount(a.pending_exposure_millis) + " USDC", "warn"],
+    ["Spent today", fmtAmount(a.daily_spent_millis) + " USDC", "c"],
+    ["Total spent", fmtAmount(a.total_spent_millis) + " USDC", "v"],
+  ].map(c => `<div class="stat ${c[2]}"><div class="lbl">${c[0]}</div><div class="val" style="font-size:20px">${c[1]}</div></div>`).join("");
+  $("agd-identity").innerHTML = `<div class="k">Agent ID</div><div class="v mono">${esc(a.agent_id)}</div>
+    <div class="k">Policy</div><div class="v">${esc(a.policy_id)} <a onclick="go('/policies','${esc(a.policy_id)}')" style="cursor:pointer">view →</a></div>
+    <div class="k">Risk level</div><div class="v">${esc(a.risk_level)}</div>
+    <div class="k">Status</div><div class="v">${pill(a.status)}</div>
+    <div class="k">Next nonce</div><div class="v mono">${a.next_nonce}</div>
+    <div class="k">Registered</div><div class="v small">${new Date(a.created_at * 1000).toISOString()}</div>`;
+  const pol = await readContract("get_policy", [a.policy_id]);
+  const pct = pol.daily_budget_millis ? Math.min(100, Math.round(100 * a.daily_spent_millis / pol.daily_budget_millis)) : 0;
+  $("agd-budget").innerHTML = `
+    <div class="kv"><div class="k">Daily budget (policy)</div><div class="v">${fmtAmount(pol.daily_budget_millis)} USDC</div>
+    <div class="k">Spent today</div><div class="v">${fmtAmount(a.daily_spent_millis)} USDC</div>
+    <div class="k">Pending exposure</div><div class="v" style="color:var(--warn)">${fmtAmount(a.pending_exposure_millis)} USDC</div>
+    <div class="k">Max single action</div><div class="v">${fmtAmount(pol.max_single_action_millis)} USDC</div></div>
+    <div class="bar" style="margin-top:12px"><div style="width:${pct}%"></div></div>
+    <p class="tiny mut" style="margin-top:6px">${pct}% of today's budget consumed</p>`;
+  const ids = (await readContract("get_agent_action_ids", [id])).action_ids;
+  let rows = "";
+  for (const aid of ids.slice(-8).reverse()) {
+    const act = await readContract("get_action", [aid]);
+    rows += `<tr class="click" onclick="go('/actions','${aid}')"><td class="mono small">${aid}</td>
+      <td>${esc(act.action_type)}</td><td class="mono tiny">${short(act.target, 8)}</td>
+      <td>${fmtAmount(act.amount_millis)} USDC</td><td>${pill(act.status)}</td></tr>`;
+  }
+  $("agd-actions").innerHTML = rows ? `<table><thead><tr><th>ID</th><th>Type</th><th>Target</th><th>Amount</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="empty">No actions yet.</div>';
+}
+$("btn-show-newagent").onclick = () => { const p = $("newagent-panel"); p.style.display = p.style.display === "none" ? "block" : "none"; };
+$("btn-do-newagent").onclick = async () => {
+  try { setBusy($("btn-do-newagent"), true);
+    await sendWrite("register_agent", [$("na-id").value.trim() || "agent-" + Date.now(), $("na-name").value.trim() || "New Agent",
+      $("na-desc").value.trim() || "Autonomous agent", $("na-policy").value, $("na-risk").value, +$("na-budget").value || 100000], "register_agent");
+    toast("Agent registered on-chain", "ok"); renderAgents();
+  } catch (e) { toast(esc(e.message), "err"); } finally { setBusy($("btn-do-newagent"), false); }
+};
+
+/* ============================================================ actions */
+const SCENARIOS = [
+  { id: "s1", name: "S1 · Safe Payment", desc: "25 USDC to the known AWS infra billing. Under every limit → APPROVE, then executes.", target: KNOWN, amount: 25000, expect: "APPROVE", exec: true },
+  { id: "s2", name: "S2 · Budget Violation", desc: "100 USDC against the 50 USDC single-action limit → deterministic REJECT.", target: KNOWN, amount: 100000, expect: "REJECT" },
+  { id: "s3", name: "S3 · New Recipient", desc: "20 USDC to an unverified vendor → ESCALATE for human verification.", target: NEWRCPT, amount: 20000, expect: "ESCALATE" },
+  { id: "s4", name: "S4 · Flagged Evidence", desc: "25 USDC to a registry-flagged phishing drainer → REJECT via the evidence gate.", target: FLAGGED, amount: 25000, expect: "REJECT" },
+  { id: "s5", name: "S5 · Policy Update Kills Stale Approval", desc: "Approved under v1 → policy tightens to v2 → v1 authorization dies at execution.", target: KNOWN, amount: 25000, expect: "BLOCKED", custom: "s5" },
+];
+async function renderActions() {
+  $("submit-panel").style.display = "none";
+  const agents = (await readContract("list_agents", [])).agents;
+  $("su-agent").innerHTML = agents.map(a => `<option value="${esc(a.agent_id)}">${esc(a.name)}</option>`).join("");
+  $("scenario-cards").innerHTML = SCENARIOS.map(s =>
+    `<div class="card"><h4>${s.name}</h4><p>${s.desc}</p>
+      <div style="margin-top:10px"><span class="tag">expect ${s.expect}</span></div>
+      <button class="btn btn-p btn-sm" style="margin-top:12px" id="btn-${s.id}" onclick="runScenario('${s.id}')">Run live scenario</button></div>`).join("");
+  const list = (await readContract("list_actions", [60])).actions;
+  if (!list.length) { $("actions-body").innerHTML = '<div class="empty"><div class="big">⚡</div>No actions yet — run a demo scenario above.</div>'; return; }
+  $("actions-body").innerHTML = `<table><thead><tr><th>ID</th><th>Agent</th><th>Type</th><th>Target</th><th>Amount</th><th>Status</th><th>Enforcement</th><th>Policy</th></tr></thead><tbody>` +
+    list.map(a => `<tr class="click" onclick="go('/actions','${esc(a.action_id)}')">
+      <td class="mono small">${esc(a.action_id)}</td><td class="small">${esc(a.agent_id)}</td>
+      <td class="tiny mono">${esc(a.action_type)}</td><td class="mono tiny">${short(a.target, 8)}</td>
+      <td class="mono small">${fmtAmount(a.amount_millis)}</td>
+      <td>${pill(a.status)}</td><td class="tiny mut">${esc(a.execution_status)}</td>
+      <td class="tiny">${esc(a.policy_version || "")}</td></tr>`).join("") + "</tbody></table>";
+}
+function setBusy(btn, on, label) { if (on) { btn.dataset.orig = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> ' + (label || "Running…"); } else { btn.disabled = false; btn.innerHTML = btn.dataset.orig || btn.innerHTML; } }
+async function runScenario(sid) {
+  const s = SCENARIOS.find(x => x.id === sid); if (!s) return;
+  const btn = $("btn-" + s.id);
+  if (!activeWallet()) await ensureWallet();
+  try {
+    if (s.custom === "s5") { await runS5(btn); return; }
+    setBusy(btn, true, "Submitting intent…");
+    const aid = await submitIntent(s.target, s.amount, "Pay infrastructure provider");
+    go("/actions", aid);
+    await runConsensusFor(aid, s);
+    if (s.exec) {
+      toast("Approved — executing payment via deterministic enforcement…", "ok");
+      await sendWrite("execute_action", [aid], "execute");
+      toast("Action EXECUTED on-chain ⚡", "ok");
+    }
+    refreshAll();
+  } catch (e) { toast(esc(e.message), "err"); refreshAll(); }
+  finally { setBusy(btn, false); }
+}
+async function submitIntent(target, amount, reason) {
+  await sendWrite("submit_action", ["treasury-agent-01", "TRANSFER", target, amount, "USDC",
+    JSON.stringify({ scenario: true }), reason || "Pay infrastructure provider", "", 3600], "submit_action");
+  const s = await apiStats();
+  return "ACT-" + String(s.total_actions).padStart(6, "0");
+}
+async function runConsensusFor(aid, s) {
+  PROGRESS.action = aid; PROGRESS.scenario = s; go("/actions", aid);
+  await new Promise(r => setTimeout(r, 60));
+  PROGRESS.step = 2;
+  const res = await sendWrite("run_consensus", [aid], "run_consensus");
+  PROGRESS.txHash = res.txHash; PROGRESS.step = 3;
+  const dec = await readContract("get_decision", [aid]);
+  PROGRESS.decision = dec;
+  const expected = s ? s.expect : null;
+  if (expected && dec.decision !== expected && !(expected === "BLOCKED")) {
+    toast(`Consensus returned <b>${dec.decision}</b> (expected ${expected}) — that is consensus being consensus; inspect the record.`, "warn");
+  } else {
+    toast(`Consensus decision: <b>${dec.decision}</b> · risk ${dec.risk_score}/100 · ${esc(dec.reason_code)}`, "ok");
+  }
+  return dec;
+}
+const PROGRESS = { step: 0, action: null, scenario: null, txHash: null, decision: null };
+async function runS5(btn) {
+  try {
+    setBusy(btn, true, "Submitting v1 intent…");
+    const aid = await submitIntent(KNOWN, 25000, "Pay infrastructure provider");
+    const dec = await runConsensusFor(aid, null);
+    if (dec.decision !== "APPROVE") throw new Error("S5 pre-step: expected APPROVE under v1, got " + dec.decision);
+    setBusy(btn, true, "Tightening policy to v2…");
+    const pol = await readContract("get_policy", ["treasury-policy"]);
+    if (pol.version && pol.version >= 2) {
+      // policy already at v2 from a previous run: just demonstrate the block with this v1 approval? v1 approval already died; submit fresh under v2 => reject path
+      toast("Policy already ≥ v2 — demonstrating over-limit REJECT under current version instead.", "warn");
+      const aid2 = await submitIntent(KNOWN, 25000, "Pay infrastructure provider");
+      await runConsensusFor(aid2, { expect: "REJECT" });
+      return;
+    }
+    const cur = await readContract("get_policy", ["treasury-policy"]);
+    await sendWrite("update_policy", ["treasury-policy", cur.name, "Tightened after incident review",
+      "Tightened treasury policy: infrastructure payments only, max 10 USDC per transaction.",
+      10000, 50000, cur.allowed_action_types, cur.restricted_targets, cur.cooldown_seconds,
+      true, 10000, true, true], "update_policy");
+    setBusy(btn, true, "Executing v1 approval under v2…");
+    const r = await sendWrite("execute_action", [aid], "execute_under_v2");
+    const a = await readContract("get_action", [aid]);
+    if (a.status === "BLOCKED" && a.execution_status === "stale_policy") {
+      toast("S5 proven live: the v1 approval was <b>BLOCKED</b> at the enforcement gate under v2.", "ok");
+      go("/actions", aid); renderActionDetail(aid);
+    } else throw new Error("Unexpected state: " + a.status + "/" + a.execution_status);
+  } catch (e) { toast(esc(e.message), "err"); }
+  finally { setBusy(btn, false); }
+}
+$("btn-show-submit").onclick = () => { const p = $("submit-panel"); p.style.display = p.style.display === "none" ? "block" : "none"; };
+$("btn-do-submit").onclick = async () => {
+  try { if (!activeWallet()) await ensureWallet();
+    setBusy($("btn-do-submit"), true);
+    await sendWrite("submit_action", [$("su-agent").value, $("su-type").value, $("su-target").value.trim(),
+      +$("su-amount").value, $("su-asset").value, "{}", $("su-reason").value, $("su-ctx").value, +$("su-expiry").value], "submit_action");
+    const s = await apiStats(); const aid = "ACT-" + String(s.total_actions).padStart(6, "0");
+    toast("Intent submitted: " + aid + " — now run consensus from its detail page.", "ok");
+    go("/actions", aid); renderActionDetail(aid);
+  } catch (e) { toast(esc(e.message), "err"); } finally { setBusy($("btn-do-submit"), false); }
+};
+
+async function renderActionDetail(id) {
+  $("ac-crumb").textContent = id;
+  const a = await readContract("get_action", [id]);
+  if (a.error) { $("ac-intent").innerHTML = '<div class="empty">Action not found.</div>'; return; }
+  PROGRESS.action = id; PROGRESS.step = a.status === "PENDING" ? 1 : 3;
+  PROGRESS.decision = null;
+  const dec = await readContract("get_decision", [id]);
+  if (!dec.error) { PROGRESS.step = 3; PROGRESS.decision = dec; }
+  else PROGRESS.step = a.status === "PENDING" ? 1 : 3;
+  $("ac-progwrap").innerHTML = progressHtml();
+  $("ac-intent").innerHTML = `
+    <div class="k">Action ID</div><div class="v mono">${esc(a.action_id)}</div>
+    <div class="k">Agent</div><div class="v"><a onclick="go('/agents','${esc(a.agent_id)}')" style="cursor:pointer">${esc(a.agent_id)}</a></div>
+    <div class="k">Type</div><div class="v mono">${esc(a.action_type)}</div>
+    <div class="k">Target</div><div class="v mono small">${esc(a.target)}</div>
+    <div class="k">Amount</div><div class="v"><b>${fmtAmount(a.amount_millis)} ${esc(a.asset)}</b></div>
+    <div class="k">Reason</div><div class="v">"${esc(a.reason)}"</div>
+    <div class="k">Policy</div><div class="v">${esc(a.policy_version)} <a onclick="go('/policies','${esc(a.policy_id)}')" style="cursor:pointer">view →</a></div>
+    <div class="k">Policy hash</div><div class="v hash">${esc(a.policy_hash || "")}</div>
+    <div class="k">Nonce</div><div class="v mono">${a.nonce}</div>
+    <div class="k">Expires</div><div class="v small">${new Date(a.expires_at * 1000).toISOString()}</div>
+    <div class="k">Action hash</div><div class="v hash">${esc(a.action_hash)}</div>
+    <div class="k">Status</div><div class="v">${pill(a.status)}</div>
+    <div class="k">Enforcement</div><div class="v small">${esc(a.execution_status)}</div>
+    ${a.resolution ? '<div class="k">Resolution</div><div class="v small">' + esc(a.resolution) + "</div>" : ""}`;
+  if (dec.error) {
+    $("ac-facts").innerHTML = '<div class="empty small">Facts are computed during consensus.</div>';
+    $("ac-evidence").innerHTML = '<div class="empty small">Evidence is fetched during consensus.</div>';
+    $("ac-decision").innerHTML = a.status === "PENDING"
+      ? `<p class="mut small">This intent has not been through consensus yet.</p>
+         <button class="btn btn-p btn-sm" id="btn-run-consensus" ${a.status === "PENDING" ? "" : "disabled"}>Run GenLayer consensus</button>`
+      : `<div class="empty small">No decision record (status ${esc(a.status)}).</div>`;
+    const b = $("btn-run-consensus");
+    if (b) b.onclick = async () => {
+      try { if (!activeWallet()) await ensureWallet();
+        setBusy(b, true, "Consensus running (~60–120 s)…");
+        PROGRESS.step = 2; $("ac-progwrap").innerHTML = progressHtml();
+        const res = await sendWrite("run_consensus", [id], "run_consensus");
+        PROGRESS.txHash = res.txHash; PROGRESS.step = 3;
+        toast("Consensus finalized — rendering decision…", "ok");
+        renderActionDetail(id);
+      } catch (e) { toast(esc(e.message), "err"); PROGRESS.step = 1; renderActionDetail(id); }
+    };
+    $("ac-timeline").innerHTML = vizHtml(null, a);
+    $("ac-resolve").innerHTML = "";
+    return;
+  }
+  // decision exists
+  PROGRESS.decision = dec;
+  $("ac-progwrap").innerHTML = progressHtml();
+  const f = dec.objective_facts || {};
+  const factRows = [
+    ["amount_limit_violation", "Amount > policy single limit"], ["budget_exceeded", "Daily budget would be exceeded"],
+    ["recipient_is_new", "Recipient not in verified registry"], ["cooldown_active", "Agent execution cooldown active"],
+    ["action_type_allowed", "Action type permitted by policy"], ["target_restricted", "Target explicitly restricted"],
+    ["external_risk_flag", "External evidence flags the target"], ["exposure_high", "Total exposure > daily budget"],
+    ["evidence_available", "Registry evidence fetched & verified"]];
+  const invert = { action_type_allowed: true, evidence_available: true };
+  $("ac-facts").innerHTML = factRows.map(([k, lbl]) => f[k] === undefined ? "" :
+    `<div class="fact"><span class="fname">${lbl}</span>${fb(invert[k] ? !f[k] : f[k])}</div>`).join("");
+  const ev = dec.evidence_entry || {};
+  $("ac-evidence").innerHTML = `
+    <div class="kv"><div class="k">Target</div><div class="v mono small">${esc(ev.target || "")}</div>
+    <div class="k">Known recipient</div><div class="v">${fb(!!ev.known_recipient)}</div>
+    <div class="k">Risk flag</div><div class="v">${fb(!!ev.risk_flag)}</div>
+    <div class="k">Label</div><div class="v">${esc(ev.label || "—")}</div>
+    <div class="k">Status</div><div class="v">${esc(ev.status || "—")}</div>
+    <div class="k">Evidence hash</div><div class="v hash">${esc(dec.evidence_hash)}</div></div>
+    ${dec.registry_fail ? '<div class="reason-box bad small">Registry fetch failure: ' + esc(dec.registry_fail) + " — consensus failed SAFE.</div>" : ""}`;
+  const whyOk = dec.decision === "APPROVE"
+    ? `<div class="reason-box"><b>Why approved:</b> all deterministic limits satisfied, external evidence clean, and every validator independently confirmed the three semantic criteria — policy intent, evidence safety, proportionality.</div>` : "";
+  const whyNo = dec.decision === "REJECT"
+    ? `<div class="reason-box bad"><b>Why rejected:</b> <span class="mono">${esc(dec.reason_code)}</span> — ${dec.reason_code && dec.reason_code.startsWith("semantic:") ? "consensus judged a semantic criterion FAILED." : "a deterministic gate fired; the LLM's opinion is irrelevant to this outcome."}</div>` : "";
+  const whyEsc = dec.decision === "ESCALATE"
+    ? `<div class="reason-box warn"><b>Why escalated:</b> <span class="mono">${esc(dec.reason_code)}</span> — uncertainty is never approval; the action awaits human resolution.</div>` : "";
+  const crit = dec.criteria || {};
+  $("ac-decision").innerHTML = `
+    <div style="display:flex;gap:18px;align-items:center">
+      <div class="gauge"><svg width="104" height="104"><circle cx="52" cy="52" r="46" fill="none" stroke="rgba(120,160,255,.12)" stroke-width="8"/>
+        <circle cx="52" cy="52" r="46" fill="none" stroke="${riskColor(dec.risk_score)}" stroke-width="8" stroke-dasharray="${2.9 * dec.risk_score} 289" stroke-linecap="round"/></svg>
+        <div class="gv"><b style="color:${riskColor(dec.risk_score)}">${dec.risk_score}</b><span>${esc(dec.risk_bucket || "risk")}</span></div></div>
+      <div style="flex:1">
+        <div style="font-family:'Space Grotesk';font-size:22px;font-weight:700">${pill(dec.decision)}</div>
+        <div class="small mut" style="margin-top:6px">Reason code</div>
+        <div class="mono small" style="color:var(--cyan)">${esc(dec.reason_code)}</div>
+        <div class="tiny mut" style="margin-top:6px">policy ${esc(dec.policy_version)} · compliant: ${dec.policy_compliant} · LLM advisory: ${dec.llm_risk_score}</div>
+      </div>
+    </div>
+    ${whyOk}${whyNo}${whyEsc}
+    <hr class="sep">
+    <div class="small mut" style="margin-bottom:8px">Semantic criteria (consensus-checked, contract-derived):</div>
+    ${Object.keys(crit).length ? Object.entries(crit).map(([k, v]) =>
+      `<div class="fact" style="margin-bottom:6px"><span class="fname">${esc(k.replace(/_/g, " "))}</span><span class="fb ${v === "PASS" ? "f" : v === "FAIL" ? "t" : ""}" style="${v === "UNCERTAIN" ? "background:rgba(251,191,36,.14);color:var(--warn)" : ""}">${v}</span></div>`).join("")
+      : '<div class="tiny mut">No criteria recorded (deterministic gate fired first, or LLM output unavailable).</div>'}`;
+  $("ac-timeline").innerHTML = vizHtml(dec, a);
+  // resolve panel
+  if (a.status === "ESCALATED") {
+    $("ac-resolve").innerHTML = `
+      <p class="small mut" style="margin-bottom:10px">This action is in HUMAN REVIEW. The protocol owner may resolve it.</p>
+      <input id="rs-note" placeholder="Resolution note (e.g. verified vendor manually)">
+      <div style="display:flex;gap:9px;margin-top:10px">
+        <button class="btn btn-ok btn-sm" id="btn-rs-approve">✔ Approve & authorize</button>
+        <button class="btn btn-danger btn-sm" id="btn-rs-reject">✖ Reject</button></div>`;
+    $("btn-rs-approve").onclick = () => resolveEscalation(id, true);
+    $("btn-rs-reject").onclick = () => resolveEscalation(id, false);
+  } else if (a.status === "APPROVED" && a.execution_status === "authorized") {
+    $("ac-resolve").innerHTML = `<p class="small mut" style="margin-bottom:10px">Consensus authorized this action. Final step: deterministic enforcement re-verifies expiry, policy version, budget, nonce, and single-execution.</p>
+      <button class="btn btn-p btn-sm" id="btn-exec">⚡ Execute action</button>`;
+    $("btn-exec").onclick = async () => {
+      try { if (!activeWallet()) await ensureWallet();
+        setBusy($("btn-exec"), true, "Enforcing…");
+        const r = await sendWrite("execute_action", [id], "execute");
+        const st = await readContract("get_action", [id]);
+        if (st.status === "BLOCKED") toast("Enforcement BLOCKED the action: " + esc(st.execution_status), "warn");
+        else toast("Action EXECUTED ⚡", "ok");
+        renderActionDetail(id);
+      } catch (e) { toast(esc(e.message), "err"); } finally { setBusy($("btn-exec"), false); }
+    };
+  } else if (a.status === "PENDING") {
+    $("ac-resolve").innerHTML = "";
+  } else {
+    $("ac-resolve").innerHTML = `<p class="tiny mut">Status <b>${esc(a.status)}</b> / ${esc(a.execution_status)} — no further actions available.</p>`;
+  }
+}
+async function resolveEscalation(id, approve) {
+  try { if (!activeWallet()) await ensureWallet();
+    const note = ($("rs-note") || {}).value || "";
+    await sendWrite("resolve_escalation", [id, approve, note], "resolve_escalation");
+    toast(approve ? "Human approval recorded — action authorized." : "Human rejection recorded — action blocked.", "ok");
+    renderActionDetail(id); refreshAll();
+  } catch (e) { toast(esc(e.message), "err"); }
+}
+function progressHtml() {
+  const s = PROGRESS;
+  const steps = [
+    [1, "Intent submitted", "action registered on-chain with its canonical hash"],
+    [2, "GenLayer consensus running", "leader + validators independently fetch pinned evidence, recompute facts, judge semantics"],
+    [3, "Decision finalized", "verdict derived by the contract from consensus-checked inputs"],
+  ];
+  let h = `<div class="progress-wrap"><div class="progress-steps">`;
+  steps.forEach(([n, t, d]) => {
+    const cls = s.step > n ? "done" : s.step === n ? "active" : "";
+    h += `<div class="pstep ${cls}"><div class="dot">${s.step > n ? "✓" : n}</div><div><b>${t}</b><div class="tiny mut">${d}</div></div></div>`;
+  });
+  h += `</div>`;
+  if (s.txHash) h += `<div class="tiny" style="margin-top:10px">tx <a class="hash" target="_blank" href="https://explorer-studio.genlayer.com/tx/${esc(s.txHash)}">${esc(s.txHash)}</a> <span class="live-tag">LIVE CONSENSUS</span></div>`;
+  h += `</div>`;
+  return h;
+}
+function vizHtml(dec, action) {
+  const decided = dec && dec.decision;
+  const vCount = 4;
+  let votes = null;
+  try { if (dec && dec.receipt && dec.receipt.consensus_data && dec.receipt.consensus_data.votes) votes = dec.receipt.consensus_data.votes; } catch (e) {}
+  const leaderDone = !!decided;
+  const h = `
+    <div class="stage leader"><b>LEADER</b><div class="sub">${leaderDone ? "proposed judgment · fetched pinned evidence · computed facts" : "awaiting consensus run"} ${leaderDone ? '<span class="live-tag">LIVE</span>' : ""}</div></div>
+    <div class="conn"></div>
+    <div class="vrow">${Array.from({ length: vCount }, (_, i) =>
+      `<div class="vnode ${leaderDone ? "agree" : "pending"}"><b>VALIDATOR ${i + 1}</b><div class="st">${leaderDone ? "substance verified ✓" : "idle"}</div></div>`).join("")}</div>
+    <div class="conn"></div>
+    <div class="stage consensus"><b>GENLAYER CONSENSUS</b><div class="sub">${leaderDone ? "equivalence principle: facts + criteria labels + evidence hash compared" : "—"}</div></div>
+    <div class="conn"></div>
+    <div class="stage" style="border-color:${decided ? (decided === "APPROVE" ? "rgba(52,211,153,.5)" : decided === "REJECT" ? "rgba(248,113,113,.5)" : "rgba(251,191,36,.5)") : "var(--line2)"}">
+      <b style="font-size:15px">${decided ? decided : "AWAITING DECISION"}</b>
+      <div class="sub">${decided ? esc(dec.reason_code || "") : "APPROVE · REJECT · ESCALATE — uncertainty never approves"}</div></div>
+    <div style="margin-top:12px">${leaderDone ? "" : '<span class="demo-tag">DEMO MODE — validator grid is illustrative until consensus runs</span>'}</div>`;
+  return h;
+}
+
+/* ============================================================ policies */
+async function renderPolicies() {
+  $("newpolicy-panel").style.display = "none";
+  const pols = (await readContract("list_policies", [])).policies;
+  if (!pols.length) { $("policies-body").innerHTML = '<div class="panel"><div class="empty"><div class="big">📜</div>No policies registered.</div></div>'; return; }
+  $("policies-body").innerHTML = pols.map(p => `
+    <div class="panel" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
+        <div><h3 style="margin-bottom:4px">${esc(p.name)}</h3>
+          <div class="tiny mut mono">${esc(p.policy_id)} · ${esc(p.version_label)} · hash ${short(p.policy_hash, 12)}</div></div>
+        <div>${pill(p.status)} <button class="btn btn-g btn-sm" onclick="go('/policies','${esc(p.policy_id)}')">Open editor →</button></div>
+      </div>
+      <div style="margin-top:12px" class="grid g4">
+        <div class="stat c"><div class="lbl">Max single</div><div class="val" style="font-size:17px">${fmtAmount(p.max_single_action_millis)} USDC</div></div>
+        <div class="stat v"><div class="lbl">Daily budget</div><div class="val" style="font-size:17px">${fmtAmount(p.daily_budget_millis)} USDC</div></div>
+        <div class="stat"><div class="lbl">Allowed types</div><div class="val" style="font-size:17px">${esc(p.allowed_action_types)}</div></div>
+        <div class="stat warn"><div class="lbl">Escalate above</div><div class="val" style="font-size:17px">${fmtAmount(p.require_escalation_above_millis)} USDC</div></div>
+      </div>
+    </div>`).join("");
+}
+async function renderPolicyDetail(id) {
+  const p = await readContract("get_policy", [id]);
+  if (p.error) return toast("Policy not found", "err");
+  $("pd-crumb").textContent = id;
+  $("pd-nl").textContent = p.natural_language;
+  $("pd-machine").innerHTML = `
+    <div class="k">max_single_action</div><div class="v mono">${fmtAmount(p.max_single_action_millis)} USDC (${p.max_single_action_millis} milli)</div>
+    <div class="k">daily_budget</div><div class="v mono">${fmtAmount(p.daily_budget_millis)} USDC (${p.daily_budget_millis} milli)</div>
+    <div class="k">allowed_action_types</div><div class="v mono">${esc(p.allowed_action_types)}</div>
+    <div class="k">restricted_targets</div><div class="v mono">${esc(p.restricted_targets || "none")}</div>
+    <div class="k">cooldown_seconds</div><div class="v mono">${p.cooldown_seconds}</div>
+    <div class="k">require_escalation_above</div><div class="v mono">${p.require_escalation_above_millis}</div>
+    <div class="k">verify_new_recipients</div><div class="v">${fb(p.require_verification_new_recipients)}</div>
+    <div class="k">reject_flagged_targets</div><div class="v">${fb(p.reject_flagged_targets)}</div>`;
+  $("pd-meta").innerHTML = `
+    <div class="k">Policy ID</div><div class="v mono">${esc(p.policy_id)}</div>
+    <div class="k">Version</div><div class="v"><b>${esc(p.version_label)}</b> (v${p.version})</div>
+    <div class="k">Version hash</div><div class="v hash">${esc(p.policy_hash)}</div>
+    <div class="k">Owner</div><div class="v mono small">${esc(p.owner)}</div>
+    <div class="k">Created / Updated</div><div class="v small">${new Date(p.created_at * 1000).toISOString()} / ${new Date(p.updated_at * 1000).toISOString()}</div>
+    <div class="k">Status</div><div class="v">${pill(p.status)}</div>`;
+}
+$("btn-show-newpolicy").onclick = () => { const p = $("newpolicy-panel"); p.style.display = p.style.display === "none" ? "block" : "none"; };
+$("btn-do-newpolicy").onclick = async () => {
+  try { if (!activeWallet()) await ensureWallet();
+    setBusy($("btn-do-newpolicy"), true);
+    await sendWrite("register_policy", [$("np-id").value.trim() || "policy-" + Date.now(), $("np-name").value.trim() || "New Policy",
+      $("np-desc").value.trim(), $("np-nl").value.trim(), +$("np-max").value, +$("np-daily").value,
+      $("np-types").value, $("np-restricted").value, +$("np-cooldown").value, true,
+      +$("np-esc").value, $("np-verify").value === "true", $("np-rejectflag").value === "true"], "register_policy");
+    toast("Policy registered on-chain as v1", "ok"); renderPolicies();
+  } catch (e) { toast(esc(e.message), "err"); } finally { setBusy($("btn-do-newpolicy"), false); }
+};
+
+/* ============================================================ consensus page */
+async function renderConsensusPage() {
+  $("consensus-viz").innerHTML = vizHtml(PROGRESS.decision, null);
+  const list = (await readContract("list_actions", [30])).actions;
+  let rows = "";
+  for (const a of list) {
+    if (!a.decision) continue;
+    const d = await readContract("get_decision", [a.action_id]);
+    if (d.error) continue;
+    const crit = Object.entries(d.criteria || {}).map(([k, v]) => `<span class="tag ${v === "PASS" ? "ok" : v === "FAIL" ? "bad" : ""}">${k.replace(/_/g, " ")}: ${v}</span>`).join(" ");
+    rows += `<tr class="click" onclick="go('/actions','${esc(a.action_id)}')">
+      <td class="mono small">${esc(a.action_id)}</td><td class="small">${esc(a.agent_id)}</td>
+      <td>${pill(d.decision)}</td><td class="mono small" style="color:${riskColor(d.risk_score)}">${d.risk_score}</td>
+      <td class="mono tiny">${esc(d.reason_code || "")}</td><td>${crit || '<span class="tiny mut">deterministic gate</span>'}</td></tr>`;
+  }
+  $("consensus-body").innerHTML = rows ? `<table><thead><tr><th>Action</th><th>Agent</th><th>Decision</th><th>Risk</th><th>Reason code</th><th>Criteria labels</th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="empty">No decisions yet — run a scenario.</div>';
+}
+
+/* ============================================================ audit */
+async function renderAudit() {
+  const q = ($("au-search").value || "").toLowerCase();
+  const kind = $("au-kind").value, decision = $("au-decision").value;
+  const stats = await apiStats();
+  const total = stats.audit_count;
+  const start = Math.max(0, (stats.audit_count >= 240 ? stats.next_action_seq - 240 : 0) - 0);
+  const page = await readContract("get_audit_page", [start, 240]);
+  let rows = "";
+  page.entries.filter(e => (!kind || e.kind === kind) && (!decision || e.decision === decision) &&
+    (!q || JSON.stringify(e).toLowerCase().includes(q))).forEach(e => {
+    rows += `<tr>
+      <td class="mono tiny">${new Date(e.at * 1000).toISOString().replace("T", " ").slice(0, 19)}</td>
+      <td class="tiny">${esc(e.kind.replace(/_/g, " "))}</td>
+      <td class="mono tiny">${esc(e.action_id || e.policy_id || e.agent_id || "—")}</td>
+      <td class="tiny">${esc(e.agent_id || "—")}</td>
+      <td>${e.decision ? pill(e.decision === "APPROVE" ? "APPROVED" : e.decision === "REJECT" ? "REJECTED" : e.decision === "ESCALATE" ? "ESCALATED" : e.decision) : '<span class="tiny mut">—</span>'}</td>
+      <td class="mono tiny">${e.risk != null ? e.risk : "—"}</td>
+      <td class="mono tiny">${esc(e.policy_version || "—")}</td>
+      <td class="hash tiny">${short(e.evidence_hash, 8)} ${short(e.action_hash, 8)}</td>
+      <td class="tiny">${esc(e.execution_status || "—")}</td></tr>`;
+  });
+  $("audit-body").innerHTML = rows ? `<table><thead><tr><th>Timestamp</th><th>Event</th><th>ID</th><th>Agent</th><th>Decision</th><th>Risk</th><th>Policy</th><th>Hashes</th><th>Enforcement</th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="empty">No matching audit entries.</div>';
+}
+
+/* ============================================================ settings */
+async function renderSettings() {
+  $("cfg-address").value = CFG.address;
+  const stats = await apiStats();
+  $("cfg-info").innerHTML = `<div class="k">Network</div><div class="v">Studionet (chain 61999)</div>
+    <div class="k">Protocol status</div><div class="v">${stats.protocol_paused ? pill("REJECTED").replace("REJECTED", "PAUSED") : pill("APPROVED").replace("APPROVED", "ACTIVE")}</div>
+    <div class="k">Total actions</div><div class="v">${stats.total_actions}</div>
+    <div class="k">Your address vs owner</div><div class="v small">${activeWallet() && activeWallet().acct && String(activeWallet().acct.address).toLowerCase() === String(stats.owner).toLowerCase() ? '<span class="fb f">OWNER — circuit breaker available</span>' : '<span class="fb t">NOT OWNER — pause/resolve disabled</span>'}</div>`;
+  const isOwner = activeWallet() && activeWallet().acct && String(activeWallet().acct.address).toLowerCase() === String(stats.owner).toLowerCase();
+  $("owner-status").innerHTML = stats.protocol_paused
+    ? '<span class="pill s-REJECTED">PAUSED</span> <span class="small mut">— the protocol is frozen for new high-impact actions.</span>'
+    : '<span class="pill s-APPROVED">ACTIVE</span> <span class="small mut">— protocol operating normally.</span>';
+  $("btn-pause").disabled = !isOwner || stats.protocol_paused;
+  $("btn-unpause").disabled = !isOwner || !stats.protocol_paused;
+  try { const reg = await readContract("get_registry_info", []);
+    $("registry-info").innerHTML = `<div class="k">Pinned URL</div><div class="v mono small" style="word-break:break-all"><a href="${esc(reg.registry_url)}" target="_blank">${esc(reg.registry_url)}</a></div>
+      <div class="k">Expected keccak256</div><div class="v hash">${esc(reg.registry_keccak)}</div>
+      <div class="k">Registry ref</div><div class="v mono small">${esc(reg.registry_ref)}</div>`;
+  } catch (e) { $("registry-info").innerHTML = "<span class='tiny mut'>registry info unavailable</span>"; }
+  showWalletList();
+}
+$("btn-save-cfg").onclick = () => {
+  CFG.address = $("cfg-address").value.trim();
+  localStorage.setItem("aegisflow_cfg", JSON.stringify(CFG));
+  toast("Contract address saved — reconnecting…", "ok");
+  boot();
+};
+$("btn-pause").onclick = async () => { try { await sendWrite("pause_protocol", [], "pause"); toast("PROTOCOL PAUSED", "warn"); renderSettings(); } catch (e) { toast(esc(e.message), "err"); } };
+$("btn-unpause").onclick = async () => { try { await sendWrite("unpause_protocol", [], "unpause"); toast("Protocol resumed", "ok"); renderSettings(); } catch (e) { toast(esc(e.message), "err"); } };
+
+/* ============================================================ boot */
+async function refreshAll() {
+  const on = document.querySelector(".page.on");
+  const id = on ? on.id : "";
+  const map = { "pg-dashboard": renderDashboard, "pg-agents": renderAgents, "pg-actions": renderActions,
+    "pg-policies": renderPolicies, "pg-consensus": renderConsensusPage, "pg-audit": renderAudit, "pg-settings": renderSettings };
+  if (map[id]) try { await map[id](); } catch (e) { console.warn(e); }
+}
+async function boot() {
+  initClient();
+  renderWalletBox();
+  if (!CFG.address) {
+    document.getElementById("app").style.display = "none";
+    toast("No contract address configured — set it in Settings after deploy.", "warn");
+    location.hash = "#/settings"; route();
+    document.getElementById("app").style.display = "";
+    return;
+  }
+  try { await apiStats(); document.getElementById("netdot").style.color = "var(--ok)"; }
+  catch (e) { document.getElementById("netdot").style.color = "var(--bad)"; toast("Contract unreachable — check the address in Settings.", "err"); }
+  route();
+}
+document.addEventListener("DOMContentLoaded", boot);
+</script>
+</body>
+</html>
