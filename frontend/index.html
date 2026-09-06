@@ -643,10 +643,12 @@ function go(route, arg) {
 }
 window.addEventListener("hashchange", route);
 function route() {
-  let h = (location.hash || "#/").slice(1).split("/").map(decodeURIComponent);
-  let base = h[0] || "/", arg = h[1] || null;
-  if (base === "") base = "/";
-  if (!document.getElementById("pg-" + pageId(base, arg))) base = "/";
+  let h = (location.hash || "#/").slice(1);   // "/dashboard" or "/agents/id"
+  if (!h.startsWith("/")) h = "/" + h;
+  const parts = h.slice(1).split("/").map(decodeURIComponent);
+  let base = "/" + (parts[0] || ""), arg = parts[1] || null;
+  if (base === "/") arg = null;
+  if (!document.getElementById("pg-" + pageId(base, arg))) { base = "/"; arg = null; }
   document.querySelectorAll(".page").forEach(p => p.classList.remove("on"));
   document.querySelectorAll("#navmenu a").forEach(a => a.classList.toggle("on", a.dataset.route === base));
   const pg = document.getElementById("pg-" + pageId(base, arg));
