@@ -1,0 +1,11 @@
+{
+  "description": "AegisFlow external evidence registry — normalized stable facts about action targets, fetched and keccak256-verified on-chain by every GenLayer validator. Sources: manual curation from public security feeds and vendor status pages; updated via repo commits (content-pinned per deployment). No timestamps, no volatile fields — only stable facts.",
+  "recipients": {
+    "0x1010101010101010101010101010101010101010": {"known_recipient": true,  "risk_flag": false, "label": "aws-infra-billing",       "status": "active"},
+    "0x2020202020202020202020202020202020202020": {"known_recipient": false, "risk_flag": false, "label": "unverified-vendor",       "status": "unknown"},
+    "0x3030303030303030303030303030303030303030": {"known_recipient": false, "risk_flag": true,  "label": "phishing-drainer",       "status": "malicious"},
+    "0x4040404040404040404040404040404040404040": {"known_recipient": true,  "risk_flag": false, "label": "dao-timelock",           "status": "active"},
+    "0x5050505050505050505050505050505050505050": {"known_recipient": true,  "risk_flag": false, "label": "established-software-supplier", "status": "active"},
+    "0x6060606060606060606060606060606060606060": {"known_recipient": true,  "risk_flag": false, "label": "cex-hotwallet",          "status": "active"}
+  }
+}
