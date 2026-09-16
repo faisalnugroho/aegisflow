@@ -1,0 +1,42 @@
+{
+  "network": "studio-next (studio-dev.genlayer.com)",
+  "chain_id": 61997,
+  "sdk": "genlayer-py 0.19.0rc2 (v0.6 RC release family)",
+  "registry_pin": {
+    "commit": "b5cfe180635cd334ae94a430bacbbce7c5ae257f",
+    "keccak256": "bb5955cbd855d8faf3aa239eef11ea857c8b08ddcab97fdccbbcd74a33691804"
+  },
+  "transactions": [],
+  "bootstrap": {},
+  "scenarios": {},
+  "rpc_chain_id_observed": 61997,
+  "deployer": "0x171BB12f9842DC5AC972F9601fD14F98470EA315",
+  "head_commit": "847c474b12f6f16326aed776e4147272af98e183",
+  "fee_preset_example": {
+    "distribution": {
+      "leaderTimeunitsAllocation": 200,
+      "validatorTimeunitsAllocation": 400,
+      "appealRounds": 0,
+      "executionBudgetPerRound": 25000000000000000,
+      "executionConsumed": 0,
+      "totalMessageFees": 0,
+      "rotations": [
+        1
+      ],
+      "maxPriceGenPerTimeUnit": 2,
+      "storageFeeMaxGasPrice": 300000000,
+      "receiptFeeMaxGasPrice": 300000000
+    },
+    "feeValue": "50000000000010352"
+  },
+  "contract_address": "0xF8Ef07c74faFF1832F289be2b94711f66f7E3a09",
+  "deploy_tx": "0x689f3b72613a37d0b3c572a9d066970d78b6ed7bef44bb1a42a8ae81d20c29b5",
+  "deploy_seconds": 48.6,
+  "deployed_at_utc": "2026-09-16T03:49:22Z",
+  "byte_identity": {
+    "deployed_sha256": "2797980b8bb7fdfeca83027111bd25336839296bd0e0a87d2dbbd09314d20029",
+    "repo_sha256": "2797980b8bb7fdfeca83027111bd25336839296bd0e0a87d2dbbd09314d20029",
+    "match": true,
+    "method": "base64-decode data.contract_code of deploy tx"
+  }
+}

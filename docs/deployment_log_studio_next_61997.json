@@ -1,0 +1,278 @@
+{
+  "network": "studio-next (studio-dev.genlayer.com)",
+  "chain_id": 61997,
+  "sdk": "genlayer-py 0.19.0rc2 (v0.6 RC release family)",
+  "registry_pin": {
+    "commit": "b5cfe180635cd334ae94a430bacbbce7c5ae257f",
+    "keccak256": "bb5955cbd855d8faf3aa239eef11ea857c8b08ddcab97fdccbbcd74a33691804"
+  },
+  "transactions": [
+    {
+      "tx_hash": "0x77b83e3eefe81b1cc8e892c6fce854db6192c5964134a5c9a1a0cd02f2c0694c",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "register_policy_v1",
+      "seconds": 45.5
+    },
+    {
+      "tx_hash": "0x96e061e01889eb565ff9c20fd05ae3c27b966cae2229d157a82f925c7212f046",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "register_agent",
+      "seconds": 41.9
+    },
+    {
+      "tx_hash": "0x004b95e30a9b7dff55b6459471004b67af74c5f35095e9d1b4a203d43c3d3492",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "submit:s1_safe_payment_run1",
+      "seconds": 44.3
+    },
+    {
+      "tx_hash": "0xeef623eec0254f8bf2dea0ff795f75f6f5f4d34ef273f273001fec8152e524f1",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "consensus:s1_safe_payment_run1",
+      "seconds": 55.5
+    },
+    {
+      "tx_hash": "0xab8d72a86f6c4fab7c3cabbf1bc2022bf25aac02561fd286f80c47c749bb0774",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "s1_execute",
+      "seconds": 40.8
+    },
+    {
+      "tx_hash": "0x37f6ceb13deb85dab8b0daadb8472eff39a9633bcccf441eee7814d6ba42d3a8",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "submit:s1_safe_payment_run2",
+      "seconds": 41.2
+    },
+    {
+      "tx_hash": "0xea6292bbee2092099af7ac67c048c8a9ce2c06f5e3defff064d84d81c43843e0",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "consensus:s1_safe_payment_run2",
+      "seconds": 60.4
+    },
+    {
+      "tx_hash": "0x3fc30b718006a6daa7197aac5878e96b8f97d4a1724b81cb05c2dbde1bdf5f46",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "submit:s1_safe_payment_run3",
+      "seconds": 44.5
+    },
+    {
+      "tx_hash": "0x313bdec9952a41d26a0517aef6a1b76e76efafb7dd958da70853f3207ab01e2f",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "consensus:s1_safe_payment_run3",
+      "seconds": 59.4
+    },
+    {
+      "tx_hash": "0x058e7b9ee3eed5ea6447a96f1792a902f190454be70dfe68cb1dad4220ca9bfc",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "submit:s2_budget_violation",
+      "seconds": 41.2
+    },
+    {
+      "tx_hash": "0x6df9f8508a4f962cfc46368a7448b7ad2a2f9391fa9538133dabdeaf8a9858cc",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "consensus:s2_budget_violation",
+      "seconds": 53.8
+    },
+    {
+      "tx_hash": "0xd7d723de4689fa12c988949e09acf9af2ee4e9df4bb20a3378525885aa9072c1",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "submit:s3_new_recipient",
+      "seconds": 41.9
+    },
+    {
+      "tx_hash": "0x6603acbf39ba3d6dd5a014fac8b939d905deae88c5e6db5985a8fd4be5c1a261",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "consensus:s3_new_recipient",
+      "seconds": 53.8
+    },
+    {
+      "tx_hash": "0xfbe883cf6484aa93c8f434d09aa40ca7ee347cb9e7b46fecdbfe4cdca035c2a6",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "s3_human_approve",
+      "seconds": 42.2
+    },
+    {
+      "tx_hash": "0xda267bb8a60d6404b6693eae2cab137972e87bee1bb357fb4c16ebd1154ceb8c",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "s3_execute",
+      "seconds": 39.4
+    },
+    {
+      "tx_hash": "0xd705624e347fe1555dd5e114aaac51085bb536a69f0674c09a4ad2d33105878c",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_AGREE",
+      "label": "submit:s4_flagged_evidence",
+      "seconds": 40.0
+    },
+    {
+      "tx_hash": "0x3ac76b618e18ae4dc8d248ae61863c8acb447b3ff2adea8bd04a68fe35167bb9",
+      "execution_result": "SUCCESS",
+      "consensus_vote": "MAJORITY_DISAGREE",
+      "label": "consensus:s4_flagged_evidence",
+      "seconds": 82.3
+    }
+  ],
+  "bootstrap": {
+    "policy_version": "treasury-policy-v1",
+    "policy_hash": "7dc7a8b7edeb417a55be0e4e61d637e1455609cfe1e1dc04d71a560c771bcf8a"
+  },
+  "scenarios": {
+    "s1_safe_payment_run1": {
+      "action_id": "ACT-000001",
+      "decision": "APPROVE",
+      "reason_code": "policy_compliant",
+      "risk_score": 8,
+      "evidence_hash": "082ec86a0cdaf9678d5675ad849a452b447020170d7f7f9f53d7fe615a248eac",
+      "tx_hash": "0xeef623eec0254f8bf2dea0ff795f75f6f5f4d34ef273f273001fec8152e524f1"
+    },
+    "s1_execute": {
+      "action_id": "ACT-000001",
+      "status": "EXECUTED"
+    },
+    "s1_safe_payment_run2": {
+      "action_id": "ACT-000002",
+      "decision": "APPROVE",
+      "reason_code": "policy_compliant",
+      "risk_score": 8,
+      "evidence_hash": "082ec86a0cdaf9678d5675ad849a452b447020170d7f7f9f53d7fe615a248eac",
+      "tx_hash": "0xea6292bbee2092099af7ac67c048c8a9ce2c06f5e3defff064d84d81c43843e0"
+    },
+    "s1_safe_payment_run3": {
+      "action_id": "ACT-000003",
+      "decision": "APPROVE",
+      "reason_code": "policy_compliant",
+      "risk_score": 6,
+      "evidence_hash": "082ec86a0cdaf9678d5675ad849a452b447020170d7f7f9f53d7fe615a248eac",
+      "tx_hash": "0x313bdec9952a41d26a0517aef6a1b76e76efafb7dd958da70853f3207ab01e2f"
+    },
+    "s2_budget_violation": {
+      "action_id": "ACT-000004",
+      "decision": "REJECT",
+      "reason_code": "amount_limit_exceeded",
+      "risk_score": 78,
+      "evidence_hash": "082ec86a0cdaf9678d5675ad849a452b447020170d7f7f9f53d7fe615a248eac",
+      "tx_hash": "0x6df9f8508a4f962cfc46368a7448b7ad2a2f9391fa9538133dabdeaf8a9858cc"
+    },
+    "s3_new_recipient": {
+      "action_id": "ACT-000005",
+      "decision": "ESCALATE",
+      "reason_code": "new_recipient_requires_verification",
+      "risk_score": 34,
+      "evidence_hash": "41756779b0324892513c919f657f8d59e3b84de9f6197b7032aeaf28dfc0948b",
+      "tx_hash": "0x6603acbf39ba3d6dd5a014fac8b939d905deae88c5e6db5985a8fd4be5c1a261"
+    },
+    "s3_human_resolution": {
+      "action_id": "ACT-000005",
+      "status": "EXECUTED"
+    },
+    "s4_flagged_evidence": {
+      "action_id": "ACT-000006",
+      "decision": "REJECT",
+      "reason_code": "external_risk_flagged",
+      "risk_score": 97,
+      "evidence_hash": "69161d44db86db01be8ef8db5569a91febb8c216d5f104a9aef0260e989441fd",
+      "tx_hash": "0x53fe4a8036b2da80aa835501163db0f22a34a4a3622c8faa2f483359b533b91d",
+      "consensus_rounds": 1,
+      "note": "first run MAJORITY_DISAGREE (validators wobbled); re-cranked the same PENDING action per fail-safe design"
+    },
+    "s5_v1_approval": {
+      "action_id": "ACT-000007",
+      "decision": "APPROVE",
+      "reason_code": "policy_compliant",
+      "risk_score": 5,
+      "evidence_hash": "082ec86a0cdaf9678d5675ad849a452b447020170d7f7f9f53d7fe615a248eac"
+    },
+    "s5_policy_update": {
+      "action_id": "ACT-000007",
+      "final_status": "BLOCKED",
+      "execution_status": "stale_policy"
+    }
+  },
+  "rpc_chain_id_observed": 61997,
+  "deployer": "0x171BB12f9842DC5AC972F9601fD14F98470EA315",
+  "head_commit": "847c474b12f6f16326aed776e4147272af98e183",
+  "fee_preset_example": {
+    "distribution": {
+      "leaderTimeunitsAllocation": 200,
+      "validatorTimeunitsAllocation": 400,
+      "appealRounds": 0,
+      "executionBudgetPerRound": 25000000000000000,
+      "executionConsumed": 0,
+      "totalMessageFees": 0,
+      "rotations": [
+        1
+      ],
+      "maxPriceGenPerTimeUnit": 2,
+      "storageFeeMaxGasPrice": 300000000,
+      "receiptFeeMaxGasPrice": 300000000
+    },
+    "feeValue": "50000000000010352"
+  },
+  "contract_address": "0xadF028749733F1D5FA73Ffc0532a48e6Ee5A6B82",
+  "deploy_tx": "0x317fdb3a596f9f93b95f56f9ffc8f8428c013ebd24dabc15e73904e6dcb4b456",
+  "deploy_seconds": 44.1,
+  "deployed_at_utc": "2026-09-16T05:42:03Z",
+  "byte_identity": {
+    "deployed_sha256": "e7e550d84701a170a31439125059303e9e6979e4efc1ea06acd9d67533baad62",
+    "repo_sha256": "e7e550d84701a170a31439125059303e9e6979e4efc1ea06acd9d67533baad62",
+    "match": true,
+    "method": "base64-decode data.contract_code of deploy tx"
+  },
+  "final_stats": {
+    "approval_rate": 57,
+    "approved": 4,
+    "audit_count": 22,
+    "authorized_millis": 120000,
+    "blocked_millis": 125000,
+    "decided": 7,
+    "escalated": 1,
+    "escalation_rate": 14,
+    "executed": 2,
+    "next_action_seq": 8,
+    "owner": "0x171BB12f9842DC5AC972F9601fD14F98470EA315",
+    "pending": 0,
+    "protocol_paused": false,
+    "rejected": 2,
+    "rejection_rate": 28,
+    "total_actions": 7
+  },
+  "registry_info_onchain": {
+    "registry_keccak": "bb5955cbd855d8faf3aa239eef11ea857c8b08ddcab97fdccbbcd74a33691804",
+    "registry_ref": "b5cfe180635c:bb5955cbd855d8fa",
+    "registry_url": "https://raw.githubusercontent.com/faisalnugroho/aegisflow/b5cfe180635cd334ae94a430bacbbce7c5ae257f/data/evidence_registry.json"
+  },
+  "post_smoke": {
+    "dapp_e2e_61997": {
+      "url_local_test": "http://127.0.0.1:8791/index.html (same bundle as Pages)",
+      "sdk": "genlayer-js 2.0.0-rc.1 browser bundle (frontend/genlayer-sdk.bundle.js)",
+      "chain": 61997,
+      "rpc": "https://studio-dev.genlayer.com/api",
+      "burner_wallet": "0x0090C8f800c59452721A0D732921BE581903F518",
+      "action_id": "ACT-000009",
+      "submit_tx": "0x7c83da9074d8f44c0c0292fad4334a3aae971d5752e54bf139f400882da700d9",
+      "consensus_tx": "0xd99839cb6e44378923073b9d16f53ebbd8ae342f0210ab9acca5708b93701448",
+      "consensus_decision": "APPROVE",
+      "reason_code": "policy_compliant",
+      "risk_score": 15,
+      "execute_tx": "0xa3673a2429d0b88a80a4b6f027ffb12b8de9232f72efc44bf25488b3e9ea1f90",
+      "final_status": "EXECUTED",
+      "executed_at": 1789541503,
+      "note": "Full lifecycle driven from the dApp frontend with a fresh in-browser burner wallet funded via the studio-dev faucet; fee deposits quoted live per write."
+    }
+  }
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AegisFlow — Demo Video (Studio Next · chain 61997)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { background:#0b0e14; color:#e8eaf0; font-family:system-ui,sans-serif; margin:0; padding:32px; }
+  .wrap { max-width:1000px; margin:0 auto; }
+  h1 { font-size:26px; margin:0 0 6px; } h1 em { color:#5eead4; font-style:normal; }
+  p { color:#9aa3b5; margin:4px 0 22px; }
+  video { width:100%; border-radius:14px; box-shadow:0 12px 48px rgba(0,0,0,.55); background:#000; }
+  .meta { margin-top:18px; font-size:14px; line-height:1.7; color:#9aa3b5; }
+  .meta code { color:#5eead4; }
+  a { color:#5eead4; }
+  ul { color:#9aa3b5; font-size:14px; line-height:1.8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>AEGIS<em>FLOW</em> — Demo Video</h1>
+  <p>Real dApp · real GenLayer consensus · Studio Next (chain <strong>61997</strong>). No mock results.</p>
+  <video controls preload="metadata" poster="">
+    <source src="aegisflow_demo_61997.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <div class="meta">
+    <p><strong>What the video shows (all real, on-chain):</strong></p>
+    <ul>
+      <li>The production dApp UI reading live protocol state from the AegisFlow Intelligent Contract on <strong>chain 61997</strong> (<a href="https://studio-dev.genlayer.com" target="_blank" rel="noopener">studio-dev.genlayer.com</a> RPC, explorer: <a href="https://explorer-studio-dev.genlayer.com/address/0xadF028749733F1D5FA73Ffc0532a48e6Ee5A6B82" target="_blank" rel="noopener">contract 0xadF0…A6B82</a>).</li>
+      <li>Scenario S1 — a 25 USDC infrastructure payment submitted by an agent through <code>submit_action</code> with an in-browser wallet.</li>
+      <li><code>run_consensus</code>: GenLayer validators fetch the keccak-pinned evidence registry, judge policy intent / evidence safety / proportionality, and the contract derives the verdict — <strong>APPROVE (policy_compliant)</strong>.</li>
+      <li><code>execute_action</code>: deterministic enforcement re-verifies action hash, policy version, budget and cooldown, then marks the payment <strong>EXECUTED</strong>.</li>
+    </ul>
+    <p>Reproduce it yourself: open the <a href="/" >live dApp</a> and run any scenario — every decision is a clickable transaction on the <a href="https://explorer-studio-dev.genlayer.com" target="_blank" rel="noopener">Studio Next explorer</a>.</p>
+  </div>
+</div>
+</body>
+</html>

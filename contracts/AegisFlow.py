@@ -1,5 +1,7 @@
-# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
-from genlayer import *
+# { "Depends": "py-genlayer:5jycge4q8k23462jtb0b9fyey1s9qz928sz2nbrd9mg4sxqg2qng" }
+import genlayer as gl
+from genlayer.types import Address, u256
+from genlayer.storage import TreeMap
 import json
 
 """
@@ -143,7 +145,7 @@ def _keccak256_hex_of_string(text: str) -> str:
     pure-stdlib path (genlayer.py.keccak), identical in the leader and
     every validator. Used for the pinned registry content verification
     and for all canonical hashes (action / policy / evidence)."""
-    from genlayer.py.keccak import Keccak256
+    from genlayer.types.keccak import Keccak256
     return Keccak256(text.encode("utf-8")).hexdigest()
 
 
@@ -207,23 +209,23 @@ def _objective_risk_score(facts: dict) -> int:
 # ---------------------------------------------------------------------------
 # Contract
 # ---------------------------------------------------------------------------
-class ActionSubmittedEvent(gl.Event):
+class ActionSubmittedEvent(gl.chain.Event):
     def __init__(self, action_id: str, /, **blob): ...
 
 
-class DecisionEvent(gl.Event):
+class DecisionEvent(gl.chain.Event):
     def __init__(self, action_id: str, /, **blob): ...
 
 
-class ActionExecutedEvent(gl.Event):
+class ActionExecutedEvent(gl.chain.Event):
     def __init__(self, action_id: str, /, **blob): ...
 
 
-class ProtocolPausedEvent(gl.Event):
+class ProtocolPausedEvent(gl.chain.Event):
     def __init__(self, /, **blob): ...
 
 
-class AegisFlow(gl.Contract):
+class AegisFlow(gl.contract.Contract):
     """Consensus-governed execution control protocol for autonomous agents."""
 
     # -- storage (uniform TreeMap[str, str] — gltest-compatible) ---------
@@ -262,11 +264,6 @@ class AegisFlow(gl.Contract):
                              + "/data/evidence_registry.json")
         self.registry_keccak = registry_keccak256
         self.registry_ref = registry_commit[:12] + ":" + registry_keccak256[:16]
-        self.agents = TreeMap()
-        self.policies = TreeMap()
-        self.actions = TreeMap()
-        self.decisions = TreeMap()
-        self.audit_records = TreeMap()
         self.agent_id_list = ""
         self.policy_id_list = ""
         self.next_action_seq = u256(1)
@@ -283,7 +280,7 @@ class AegisFlow(gl.Contract):
     # internal storage helpers
     # ------------------------------------------------------------------
     def _now(self) -> int:
-        return _parse_iso_epoch(gl.message_raw["datetime"])
+        return _parse_iso_epoch(gl.message.raw["datetime"])
 
     def _load(self, store: TreeMap, key: str) -> dict:
         return json.loads(store[key])
@@ -631,7 +628,7 @@ class AegisFlow(gl.Contract):
             evidence = None
             registry_fail = ""
             try:
-                resp = gl.nondet.web.get(registry_url)
+                resp = gl.nondet.web.get(registry_url)  # v0.6: eager by default
                 if resp.status != 200:
                     raise AssertionError("http_" + str(resp.status))
                 if resp.body is None:
@@ -801,7 +798,7 @@ class AegisFlow(gl.Contract):
             llm_fail = ""
             parsed = None
             try:
-                raw = gl.nondet.exec_prompt(prompt, response_format="json")
+                raw = gl.nondet.exec_prompt(prompt, response_format="json")  # v0.6: eager, returns parsed JSON
                 if isinstance(raw, str):
                     parsed = json.loads(raw)
                 else:

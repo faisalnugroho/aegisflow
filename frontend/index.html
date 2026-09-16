@@ -306,7 +306,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 34px;colo
 
     <div class="lsec">
       <h2>Built for the demo</h2>
-      <p>Five one-click scenarios run through real GenLayer consensus on Studionet: safe payment → APPROVE, over-limit → REJECT, unverified recipient → ESCALATE, flagged target → REJECT despite a fooled LLM, and a policy version bump that kills a stale v1 approval at the enforcement gate.</p>
+      <p>Five one-click scenarios run through real GenLayer consensus on Studio Next (chain 61997): safe payment → APPROVE, over-limit → REJECT, unverified recipient → ESCALATE, flagged target → REJECT despite a fooled LLM, and a policy version bump that kills a stale v1 approval at the enforcement gate.</p>
       <div class="cards3">
         <div class="card"><div class="ic">✅</div><h4>S1 · Safe payment</h4><p>25 USDC to a known infra provider, under every limit → APPROVE → EXECUTE.</p></div>
         <div class="card"><div class="ic">⛔</div><h4>S2 · Budget violation</h4><p>100 USDC against a 50 USDC single-action limit → deterministic REJECT.</p></div>
@@ -318,14 +318,14 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 34px;colo
     </div>
     <footer>
       <div>AEGISFLOW — Agent Tank Hackathon · Autonomous Protocols track · Built on GenLayer</div>
-      <div><a href="https://explorer-studio.genlayer.com" target="_blank">Explorer ↗</a> · <a href="https://docs.genlayer.com" target="_blank">GenLayer Docs ↗</a></div>
+      <div><a href="https://explorer-studio-dev.genlayer.com" target="_blank">Explorer ↗</a> · <a href="https://docs.genlayer.com" target="_blank">GenLayer Docs ↗</a></div>
     </footer>
   </div>
 
   <!-- ============ DASHBOARD ============ -->
   <div class="page" id="pg-dashboard">
     <div class="pagehead">
-      <div><h2>Protocol Overview</h2><p class="mut" id="dash-sub">Live state from the AegisFlow Intelligent Contract on Studionet.</p></div>
+      <div><h2>Protocol Overview</h2><p class="mut" id="dash-sub">Live state from the AegisFlow Intelligent Contract on Studio Next (chain 61997).</p></div>
       <div style="display:flex;gap:9px;flex-wrap:wrap">
         <button class="btn btn-g btn-sm" onclick="refreshAll()">↻ Refresh</button>
         <button class="btn btn-p btn-sm" onclick="go('/actions')">Run a scenario</button>
@@ -478,7 +478,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 34px;colo
       <div class="panel">
         <h3>Leader / Validator Flow</h3>
         <div class="cviz" id="consensus-viz"></div>
-        <p class="tiny mut" style="margin-top:8px">The leader receipt and finalization are real on-chain data. The per-validator grid visualizes the Studionet validator set; unless the receipt exposes per-validator votes, it is labeled <span class="demo-tag">DEMO MODE</span>. The consensus result itself — the decision, criteria labels, facts, and evidence hash — is real contract state written by real GenLayer consensus.</p>
+        <p class="tiny mut" style="margin-top:8px">The leader receipt and finalization are real on-chain data. The per-validator grid visualizes the Studio Next validator set; unless the receipt exposes per-validator votes, it is labeled <span class="demo-tag">DEMO MODE</span>. The consensus result itself — the decision, criteria labels, facts, and evidence hash — is real contract state written by real GenLayer consensus.</p>
       </div>
       <div class="panel">
         <h3>Equivalence Principle</h3>
@@ -515,11 +515,11 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 34px;colo
     <div class="grid g2">
       <div class="panel">
         <h3>Contract Connection</h3>
-        <label class="f">Contract address (Studionet)</label>
+        <label class="f">Contract address (Studio Next · chain 61997)</label>
         <input id="cfg-address" class="mono">
         <div style="margin-top:12px;display:flex;gap:9px">
           <button class="btn btn-p btn-sm" id="btn-save-cfg">Save & reconnect</button>
-          <button class="btn btn-g btn-sm" onclick="window.open('https://explorer-studio.genlayer.com/address/'+CFG.address,'_blank')">View on Explorer ↗</button>
+          <button class="btn btn-g btn-sm" onclick="window.open('https://explorer-studio-dev.genlayer.com/address/'+CFG.address,'_blank')">View on Explorer ↗</button>
         </div>
         <div class="kv" style="margin-top:16px" id="cfg-info"></div>
       </div>
@@ -549,17 +549,25 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 34px;colo
 <script>
 "use strict";
 /* ============================================================ config */
-const DEFAULTS = { address: "0xFAB23E7B871868Caf1D39454652FD20d66ebAe1E" }; // deployed Studionet 2026-09-06, bootstrap+smoke in docs/deployment_log.json
-let CFG = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem("aegisflow_cfg") || "{}"));
+const DEFAULTS = { address: "0xadF028749733F1D5FA73Ffc0532a48e6Ee5A6B82" }; // Studio Next (chain 61997) deployment — see docs/deployment_log_studio_next_61997.json
+let CFG = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem("aegisflow_cfg_61997") || "{}")); // key migrated with the 61997 deployment so stale 61999-era cached configs cannot override it
 const KNOWN="0x1010101010101010101010101010101010101010",
       NEWRCPT="0x2020202020202020202020202020202020202020",
       FLAGGED="0x3030303030303030303030303030303030303030";
 
 /* ============================================================ sdk */
 const SDK = window.GenLayerSDK;
+/* Studio Next (studio-dev preview) — chain 61997. Uses the RC SDK's
+   official studioDevnet definition (genlayer-js 2.0.0-rc.1): same
+   consensus deployment as studionet, canonical RPC
+   https://studio-dev.genlayer.com/api (chain id 61997).
+   The RC SDK auto-quotes the fee deposit from the live network fee
+   policy on studio chains — writes need no explicit fees here.
+   Do NOT relabel SDK.studionet (61999) — different chain ids. */
+const STUDIONEXT = SDK.studioDevnet;
 let client = null;
 function initClient() {
-  client = SDK.createClient({ chain: SDK.studionet });
+  client = SDK.createClient({ chain: STUDIONEXT });
 }
 async function readContract(fn, args) {
   const r = await client.readContract({ address: CFG.address, functionName: fn, args: args || [] });
@@ -567,9 +575,19 @@ async function readContract(fn, args) {
 }
 async function sendWrite(fn, args, label) {
   const w = activeWallet(); if (!w) throw new Error("No wallet connected");
-  const txHash = await client.writeContract({ address: CFG.address, functionName: fn, args, account: w.acct });
+  /* Studio Next (61997) charges fees: quote the deposit from the live fee
+     policy before every write (200/400 time units, 1 rotation, no child
+     messages — this contract emits events only). */
+  const fees = await client.estimateTransactionFees({
+    leaderTimeunitsAllocation: 200,
+    validatorTimeunitsAllocation: 400,
+    totalMessageFees: 0,
+    rotations: [1],
+    appealRounds: 0,
+  });
+  const txHash = await client.writeContract({ address: CFG.address, functionName: fn, args, account: w.acct, fees });
   const receipt = await Promise.race([
-    client.waitForTransactionReceipt({ hash: txHash, status: SDK.TransactionStatus.ACCEPTED, interval: 5000, retries: 60 }),
+    client.waitForTransactionReceipt({ hash: txHash, waitUntil: "finalized", interval: 5000, retries: 60 }),
     new Promise((_, rej) => setTimeout(() => rej(new Error("timeout waiting for consensus (tx may still finalize)")), 300000))
   ]);
   let exec = null, stderr = "";
@@ -1068,7 +1086,7 @@ function progressHtml() {
     h += `<div class="pstep ${cls}"><div class="dot">${s.step > n ? "✓" : n}</div><div><b>${t}</b><div class="tiny mut">${d}</div></div></div>`;
   });
   h += `</div>`;
-  if (s.txHash) h += `<div class="tiny" style="margin-top:10px">tx <a class="hash" target="_blank" href="https://explorer-studio.genlayer.com/tx/${esc(s.txHash)}">${esc(s.txHash)}</a> <span class="live-tag">LIVE CONSENSUS</span></div>`;
+  if (s.txHash) h += `<div class="tiny" style="margin-top:10px">tx <a class="hash" target="_blank" href="https://explorer-studio-dev.genlayer.com/tx/${esc(s.txHash)}">${esc(s.txHash)}</a> <span class="live-tag">LIVE CONSENSUS</span></div>`;
   h += `</div>`;
   return h;
 }
@@ -1194,7 +1212,7 @@ async function renderAudit() {
 async function renderSettings() {
   $("cfg-address").value = CFG.address;
   const stats = await apiStats();
-  $("cfg-info").innerHTML = `<div class="k">Network</div><div class="v">Studionet (chain 61999)</div>
+  $("cfg-info").innerHTML = `<div class="k">Network</div><div class="v">Studio Next (chain 61997)</div>
     <div class="k">Protocol status</div><div class="v">${stats.protocol_paused ? pill("REJECTED").replace("REJECTED", "PAUSED") : pill("APPROVED").replace("APPROVED", "ACTIVE")}</div>
     <div class="k">Total actions</div><div class="v">${stats.total_actions}</div>
     <div class="k">Your address vs owner</div><div class="v small">${activeWallet() && activeWallet().acct && String(activeWallet().acct.address).toLowerCase() === String(stats.owner).toLowerCase() ? '<span class="fb f">OWNER — circuit breaker available</span>' : '<span class="fb t">NOT OWNER — pause/resolve disabled</span>'}</div>`;
@@ -1213,7 +1231,7 @@ async function renderSettings() {
 }
 $("btn-save-cfg").onclick = () => {
   CFG.address = $("cfg-address").value.trim();
-  localStorage.setItem("aegisflow_cfg", JSON.stringify(CFG));
+  localStorage.setItem("aegisflow_cfg_61997", JSON.stringify({ address: CFG.address }));
   toast("Contract address saved — reconnecting…", "ok");
   boot();
 };

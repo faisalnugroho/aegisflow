@@ -59,9 +59,12 @@ explorer, and an owner circuit breaker.
 ## Links
 - Repository: https://github.com/faisalnugroho/aegisflow
 - Live dApp: https://faisalnugroho.github.io/aegisflow/
-- Contract (Studionet):
-  https://explorer-studio.genlayer.com/address/0xFAB23E7B871868Caf1D39454652FD20d66ebAe1E
-- Deployment evidence: docs/deployment_log.json (all tx hashes below)
+- Contract (Studio Next, chain 61997):
+  https://explorer-studio-dev.genlayer.com/address/0xadF028749733F1D5FA73Ffc0532a48e6Ee5A6B82
+- Deployment evidence (Studio Next 61997): docs/deployment_log_studio_next_61997.json
+- Historical baseline (Studionet 61999, Sep 2026): contract
+  0xFAB23E7B871868Caf1D39454652FD20d66ebAe1E — preserved, intentionally retained,
+  see docs/deployment_log.json
 
 ## Evidence — every claim is a clickable tx on the explorer
 
@@ -120,5 +123,43 @@ uv pip install --python .venv/bin/python genlayer-test==0.29.2 pytest eth_utils
 .venv/bin/python -m pytest tests/ -v          # 48/48
 
 uv pip install --python .venv/bin/python genlayer-py
-.venv/bin/python scripts/deploy_studionet.py # deploy + live smoke S1-S5
+.venv/bin/python scripts/deploy_studio_next.py # deploy + live smoke S1-S5 (Studio Next 61997,
+                                               # genlayer-py 0.19.0rc2 + genlayer-test 0.30.0rc2)
 ```
+
+
+## Studio Next deployment (chain 61997) — September 2026
+
+Per the Steward request, the identical AegisFlow contract was deployed to the
+GenLayer Studio development preview ("Studio Next", studio-dev.genlayer.com,
+chain ID 61997) using the v0.6 release-candidate tooling family
+(genlayer-py 0.19.0rc2, genlayer-test 0.30.0rc2, genlayer-js 2.0.0-rc.1).
+The contract source (contracts/AegisFlow.py) is byte-identical to the deployed
+code (sha256 e7e550d84701a170…, proven from the deploy tx's on-chain
+contract_code against the repository file). The stable Studionet (61999)
+deployment is retained unchanged as a historical baseline.
+
+### Studio Next evidence — every claim is a clickable tx on
+https://explorer-studio-dev.genlayer.com
+
+Deploy (full consensus): 0x317fdb3a596f9f93b95f56f9ffc8f8428c013ebd24dabc15e73904e6dcb4b456
+Contract: 0xadF028749733F1D5FA73Ffc0532a48e6Ee5A6B82
+
+| Scenario | Action | Result | Consensus tx |
+|---|---|---|---|
+| S1 safe payment (25 USDC, known provider) | ACT-000001 | APPROVE risk 8, EXECUTED | 0xeef623eec0254f8bf2dea0ff795f75f6f5f4d34ef273f273001fec8152e524f1 |
+| S1 determinism run 2 | ACT-000002 | APPROVE risk 8 | (see deployment log) |
+| S1 determinism run 3 | ACT-000003 | APPROVE risk 6 | (see deployment log) |
+| S2 over limit (100 vs 50 USDC) | ACT-000004 | REJECT amount_limit_exceeded risk 78 | (see deployment log) |
+| S3 new recipient (20 USDC, unverified) | ACT-000005 | ESCALATE → human approve → EXECUTED | (see deployment log) |
+| S4 flagged target (phishing drainer) | ACT-000006 | REJECT external_risk_flagged risk 97 | (see deployment log; first run MAJORITY_DISAGREE, re-cranked on the same PENDING action per the fail-safe design) |
+| S5 approval under v1 → policy v2 | ACT-000007 | BLOCKED stale_policy at execution | (see deployment log) |
+| dApp E2E (browser burner wallet) | ACT-000009 | APPROVE risk 15 → EXECUTED | 0xd99839cb6e44378923073b9d16f53ebbd8ae342f0210ab9acca5708b93701448 |
+
+Full tx hashes for every step: docs/deployment_log_studio_next_61997.json.
+
+### Demo video
+
+A short public demo video (no login required) showing the live dApp on
+Studio Next 61997 and the full consensus → execution flow is embedded in the
+repository README: docs/demo_video.md (public URL inside).

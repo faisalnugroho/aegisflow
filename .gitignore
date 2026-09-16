@@ -7,3 +7,8 @@ artifacts/
 .pytest_cache/
 scripts/smoke_deployer.json
 docs/deployment_log.json
+
+# 61997 remediation: deployer keyfile + raw run logs stay local
+scripts/studionext_deployer.json
+docs/deploy_61997_stdout.log
+docs/recrank_s4_s5.log

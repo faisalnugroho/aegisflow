@@ -1,7 +1,7 @@
 """Shared test helpers for AegisFlow direct-mode tests.
 
 Proven patterns from TrustReconciler/SecondHandCarInspectionEscrow
-(both portal-accepted): set_time + message_raw patch for clock control;
+(both portal-accepted): set_time + message.raw patch for clock control;
 mock_web in DICT format (string bodies silently fetch empty!);
 mock_llm first-match-wins (clear_mocks between verdicts); addr_str for
 EIP-55 comparisons; vendor_keccak byte-identical to the SDK's
@@ -134,11 +134,12 @@ def iso_in(seconds):
 
 def set_time(vm, iso):
     vm.warp(iso)
-    gl_mod = sys.modules.get("genlayer.gl")
+    gl_mod = sys.modules.get("genlayer")
     if gl_mod is not None:
         try:
-            if getattr(gl_mod, "message_raw", None):
-                gl_mod.message_raw["datetime"] = iso
+            msg = getattr(gl_mod, "message", None)
+            if msg is not None and getattr(msg, "raw", None):
+                msg.raw["datetime"] = iso
         except Exception:
             pass
 

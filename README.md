@@ -76,7 +76,7 @@ contracts:
 
 ## The five live demo scenarios
 
-All run through **real GenLayer consensus** on Studionet:
+All run through **real GenLayer consensus** on Studio Next (chain 61997):
 
 | # | Scenario | Input | Expected |
 |---|----------|-------|----------|
@@ -108,7 +108,8 @@ normalized entry used, so the UI shows precisely what consensus saw.
 contracts/AegisFlow.py        # the Intelligent Contract (the protocol)
 tests/                        # 48 direct-mode tests (deterministic core,
                               #   S1-S5, fail-safes, validator substance)
-scripts/deploy_studionet.py   # deploy + bootstrap + live smoke (S1-S5)
+scripts/deploy_studio_next.py # deploy to Studio Next 61997 + bootstrap + live smoke (S1-S5)
+scripts/deploy_studionet.py   # (historical) original Studionet 61999 deployment
 data/evidence_registry.json   # pinned external evidence registry
 frontend/                     # the dApp (GitHub Pages, GenLayer SDK bundle)
 docs/                         # architecture, deployment log
@@ -123,13 +124,31 @@ uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python \
   genlayer-test==0.29.2 pytest eth_utils
 .venv/bin/python -m pytest tests/ -v
 
-# deploy + live smoke (Studionet; ~20 min for ~15 consensus txs)
+# deploy + live smoke (Studio Next 61997; ~20 min for ~15 consensus txs)
 uv pip install --python .venv/bin/python genlayer-py
-.venv/bin/python scripts/deploy_studionet.py
+.venv/bin/python scripts/deploy_studio_next.py   # requires genlayer-py 0.19.0rc2 + genlayer-test 0.30.0rc2
 ```
 
 The dApp frontend reads its contract address from Settings (persisted in
-localStorage). Deployed instance: see `docs/deployment_log.json`.
+localStorage).
+
+## Deployment (Studio Next — chain 61997)
+
+| Item | Value |
+| --- | --- |
+| Network | Studio Next (`studio-dev.genlayer.com/api`, chain ID **61997**) |
+| Contract | `0xadF028749733F1D5FA73Ffc0532a48e6Ee5A6B82` |
+| Deploy tx | `0x317fdb3a596f9f93b95f56f9ffc8f8428c013ebd24dabc15e73904e6dcb4b456` |
+| Byte-identity | deployed sha256 `e7e550d84701a170…` == `contracts/AegisFlow.py` |
+| Explorer | https://explorer-studio-dev.genlayer.com/address/0xadF028749733F1D5FA73Ffc0532a48e6Ee5A6B82 |
+| Evidence log | `docs/deployment_log_studio_next_61997.json` (all tx hashes) |
+| Demo video | https://faisalnugroho.github.io/aegisflow/demo-video.html |
+
+SDK family (v0.6 RC): `genlayer-py 0.19.0rc2`, `genlayer-test 0.30.0rc2`,
+`genlayer-js 2.0.0-rc.1` (bundled in `frontend/genlayer-sdk.bundle.js`).
+The original stable-Studionet (61999) deployment
+(`0xFAB23E7B871868Caf1D39454652FD20d66ebAe1E`, `docs/deployment_log.json`)
+is preserved unchanged as a historical baseline.
 
 ## Frontend
 
@@ -158,5 +177,5 @@ on-chain state.
   safe while demonstrating the full decision → enforcement lifecycle).
 - `resolve_escalation` / `pause_protocol` are owner-gated; in the demo the
   contract deployer is the owner.
-- Studionet consensus takes ~40-120 s per write; the UI communicates this
+- Studio Next (61997) consensus takes ~40-120 s per write; the UI communicates this
   with progress steps and never fakes a decision.
