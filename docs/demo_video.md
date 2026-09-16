@@ -29,11 +29,15 @@ re-verifying hash/policy/budget → EXECUTED.
 
 ## Reproducibility
 
-Every step shown is a real transaction. The corresponding action in the video
-is ACT-000010 (consensus APPROVE, executed); its tx hashes and all other
-deployment transactions are listed in
-`docs/deployment_log_studio_next_61997.json`. Anyone can re-run the same flow
-from the public dApp and click through every tx on the explorer.
+Every step shown is a real transaction. The action recorded in the video is
+ACT-000010 (consensus APPROVE → EXECUTED). An independent clean-browser E2E
+against THIS public URL later reproduced the full flow with ACT-000013:
+submit 0xe736e3d454e61ad3edadcc590215c44457fef4d711322dab2eb7075d427f31f3 →
+consensus APPROVE 0x90e458f12f80eab97d6387bc1866fa0ed3c7bb909b384d945be2b3be35830763 →
+EXECUTED 0xf8d08e76c19a5987535da793633a673ca744271125430ef3d9f52ef9e37e70b2.
+All tx hashes are listed in `docs/deployment_log_studio_next_61997.json`.
+Anyone can re-run the same flow from the public dApp and click through every
+tx on the explorer.
 
 ## Rebuilding the video
 

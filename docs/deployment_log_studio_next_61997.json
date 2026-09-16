@@ -273,6 +273,23 @@
       "final_status": "EXECUTED",
       "executed_at": 1789541503,
       "note": "Full lifecycle driven from the dApp frontend with a fresh in-browser burner wallet funded via the studio-dev faucet; fee deposits quoted live per write."
+    },
+    "dapp_e2e_61997_prod": {
+      "url": "https://faisalnugroho.github.io/aegisflow/",
+      "sdk": "genlayer-js 2.0.0-rc.1 browser bundle",
+      "chain": 61997,
+      "rpc": "https://studio-dev.genlayer.com/api",
+      "burner_wallet": "0xe19f831b54549A216c7981192eB1Da986E751891",
+      "action_id": "ACT-000013",
+      "submit_tx": "0xe736e3d454e61ad3edadcc590215c44457fef4d711322dab2eb7075d427f31f3",
+      "consensus_tx": "0x90e458f12f80eab97d6387bc1866fa0ed3c7bb909b384d945be2b3be35830763",
+      "consensus_decision": "APPROVE",
+      "reason_code": "policy_compliant",
+      "risk_score": 15,
+      "execute_tx": "0xf8d08e76c19a5987535da793633a673ca744271125430ef3d9f52ef9e37e70b2",
+      "final_status": "EXECUTED",
+      "executed_at": 1789543934,
+      "note": "Clean-browser Playwright E2E against the PUBLIC GitHub Pages URL; fee deposit quoted live per write; one transient 'Server busy: all 8 execution slots' on execute retried by the harness (the dApp UI exposes refresh/retry for the same)."
     }
   }
 }

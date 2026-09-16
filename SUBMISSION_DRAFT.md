@@ -154,12 +154,14 @@ Contract: 0xadF028749733F1D5FA73Ffc0532a48e6Ee5A6B82
 | S3 new recipient (20 USDC, unverified) | ACT-000005 | ESCALATE → human approve → EXECUTED | (see deployment log) |
 | S4 flagged target (phishing drainer) | ACT-000006 | REJECT external_risk_flagged risk 97 | (see deployment log; first run MAJORITY_DISAGREE, re-cranked on the same PENDING action per the fail-safe design) |
 | S5 approval under v1 → policy v2 | ACT-000007 | BLOCKED stale_policy at execution | (see deployment log) |
-| dApp E2E (browser burner wallet) | ACT-000009 | APPROVE risk 15 → EXECUTED | 0xd99839cb6e44378923073b9d16f53ebbd8ae342f0210ab9acca5708b93701448 |
+| dApp E2E — local check (browser burner wallet) | ACT-000009 | APPROVE risk 15 → EXECUTED | 0xd99839cb6e44378923073b9d16f53ebbd8ae342f0210ab9acca5708b93701448 |
+| dApp E2E — PUBLIC production URL, clean browser | ACT-000013 | APPROVE risk 15 → EXECUTED | 0x90e458f12f80eab97d6387bc1866fa0ed3c7bb909b384d945be2b3be35830763 (consensus), 0xf8d08e76c19a5987535da793633a673ca744271125430ef3d9f52ef9e37e70b2 (execute) |
 
 Full tx hashes for every step: docs/deployment_log_studio_next_61997.json.
 
 ### Demo video
 
-A short public demo video (no login required) showing the live dApp on
-Studio Next 61997 and the full consensus → execution flow is embedded in the
-repository README: docs/demo_video.md (public URL inside).
+Public demo video (no login required), recorded from the production dApp:
+https://faisalnugroho.github.io/aegisflow/demo-video.html
+(MP4: https://faisalnugroho.github.io/aegisflow/aegisflow_demo_61997.mp4 —
+details in docs/demo_video.md).
